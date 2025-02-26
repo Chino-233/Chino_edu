@@ -1,0 +1,16 @@
+//Symbol Name		Page Address
+//----------------	------------
+//	DDR                     2025
+//	DSR                     2024
+//	IN1                     2004
+//	IN2                     200C
+//	KBDR                    2023
+//	KBSR                    2022
+//	OUT1                    2007
+//	OUT2                    2016
+//	RETURN                  2012
+//	SPACE                   201E
+//	STONER0                 2021
+//	STONER1                 2020
+//	STONER2                 201F
+//	TEN                     2026

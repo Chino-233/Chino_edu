@@ -1,0 +1,22 @@
+//Symbol Name		Page Address
+//----------------	------------
+//	AGAIN                   302C
+//	BEGIN                   3006
+//	C                       3038
+//	I                       3037
+//	IE                      3034
+//	KBDR                    3036
+//	KBSR                    3035
+//	NEXTLINE                3042
+//	OUT1                    3007
+//	OUT2                    3019
+//	POS                     3032
+//	S                       3039
+//	SIX                     303E
+//	SPACE                   303A
+//	SPRT                    3031
+//	STONER1                 3041
+//	STONER7                 3040
+//	VECTOR                  3033
+//	WAIT                    302A
+//	WAITNUM                 303F

@@ -35,6 +35,18 @@ int main(){
 	freopen("in.in", "r", stdin);
 	freopen("out.out", "w", stdout);
     #endif
-    
+    long long a,b,p=0;
+    cin>>a>>b>>p;
+    cout<<a<<"^"<<b<<" mod "<<p<<"=";
+    long long ans=1;
+    while (b>0)
+    {
+        if(b&1){
+            ans=(ans*a)%p;
+        }
+        a=(a*a)%p;
+        b>>=1;
+    }
+    cout<<ans<<endl;
     return 0;
 }

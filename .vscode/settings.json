@@ -1,0 +1,64 @@
+{
+    "Codegeex.DisabledFor": {
+        "cpp": true,
+        "python": true
+    },
+    "Codegeex.EnableExtension": true,
+    "Codegeex.Privacy": false,
+    "cmake.configureOnOpen": true,
+    "editor.unicodeHighlight.invisibleCharacters": false,
+    "extensions.confirmedUriHandlerExtensionIds": [
+        "Autodesk.autolispext"
+    ],
+    "files.autoSave": "afterDelay",
+    "terminal.integrated.commandsToSkipShell": [
+        "matlab.interrupt"
+    ],
+    "cmake.showOptionsMovedNotification": false,
+    "github.copilot.enable": {
+        "*": true,
+        "plaintext": false,
+        "markdown": true,
+        "scminput": false,
+        "cpp": false,
+        "python": true
+    },
+    "cmake.pinnedCommands": [
+        "workbench.action.tasks.configureTaskRunner",
+        "workbench.action.tasks.runTask"
+    ],
+    "github.copilot.editor.enableCodeActions": false,
+    "redhat.telemetry.enabled": true,
+    "backgroundCover.imagePath": "c:\\Users\\Chino\\Pictures\\智乃图片~\\Konachan.com - 286742 sample.png",
+    "backgroundCover.opacity": 0.05,
+    "[java]": {
+        "editor.formatOnSave": true,
+        "editor.suggest.snippetsPreventQuickSuggestions": false,
+        "editor.defaultFormatter": "redhat.java"
+    },
+    "java.home": "C:\\Program Files\\Java\\jdk-22",
+    "java.import.gradle.home": "C:\\Program Files\\Java\\jdk-22",
+    "Codegeex.License": "",
+    "workbench.colorTheme": "Default Light Modern",
+    "editor.stickyScroll.enabled": false,
+    "backgroundCover.randomImageFolder": "c:\\Users\\Chino\\Pictures\\智乃图片~",
+    "backgroundCover.autoStatus": false,
+    "gradle.nestedProjects": false,
+    "java.configuration.maven.userSettings": "D:\\apache-maven-repository\\settings.xml",
+    "java.configuration.maven.globalSettings": "D:\\apache-maven-repository\\settings.xml",
+    "maven.executable.path": "D:\\apache-maven-3.9.9\\bin\\mvn",
+    "java.classPath": [
+        "D:\\JAVA\\src\\com\\chino"
+    ],
+    "github.copilot.chat.localeOverride": "zh-CN",
+    "git.enableSmartCommit": true,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "http.proxy": "http://172.26.88.250:7890",
+    "C_Cpp.debug.autoAddConfigurations": false,
+    "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+    "launch": {
+        "configurations": [],
+        "compounds": []
+    }
+}

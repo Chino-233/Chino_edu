@@ -2,6 +2,20 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "type": "java",
+            "name": "client",
+            "request": "launch",
+            "mainClass": "client",
+            "projectName": "chino_edu_9ed9a383"
+        },
+        {
+            "type": "java",
+            "name": "server",
+            "request": "launch",
+            "mainClass": "server",
+            "projectName": "chino_edu_9ed9a383"
+        },
+        {
             "name": "(gdb) Launch",
             "type": "cppdbg",
             "request": "launch",

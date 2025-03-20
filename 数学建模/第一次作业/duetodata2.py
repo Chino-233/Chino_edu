@@ -40,9 +40,11 @@ print(f"筛选后数据从9月11日开始，共 {len(data)} 行")
 output_dir = r"d:\chino_edu\数学建模\第一次作业\插值结果_9月11日后"
 corr_output_dir = r"d:\chino_edu\数学建模\第一次作业\相关性图_9月11日后"
 data_output_dir = r"d:\chino_edu\数学建模\第一次作业\插值数据_9月11日后"
+change_rate_dir = r"d:\chino_edu\数学建模\第一次作业\变化率相关性图_9月11日后"
 os.makedirs(output_dir, exist_ok=True)
 os.makedirs(corr_output_dir, exist_ok=True)
 os.makedirs(data_output_dir, exist_ok=True)
+os.makedirs(change_rate_dir, exist_ok=True)
 
 # 提取需要进行插值可视化的列
 x_columns = ['AvgTN', '盐度1', 'pH1', '溶解氧', '导电率']
@@ -198,8 +200,7 @@ for x_col in x_columns:
         plt.savefig(f"{corr_output_dir}/{x_col}_vs_{y_col}_相关性.png", dpi=300, bbox_inches='tight')
         plt.close()
 
-print(f"所有图像已保存至 {output_dir} 和 {corr_output_dir} 目录")
-print(f"所有插值数据已保存至 {data_output_dir} 目录")
+print(f"所有相关性图像已保存至 {corr_output_dir} 目录")
 
 # 生成并绘制相关系数热力图
 plt.figure(figsize=(12, 10))
@@ -220,3 +221,134 @@ plt.title('环境因子与生物指标的相关性热力图', fontsize=16)
 plt.tight_layout()
 plt.savefig(f"{corr_output_dir}/相关性热力图.png", dpi=300, bbox_inches='tight')
 plt.close()
+
+# ---------- 新增代码：计算环境因素的变化率并分析与生物指标的相关性 ----------
+
+# 创建一个新的DataFrame用于存储变化率数据
+change_rate_data = pd.DataFrame({'日期': filled_data['日期']})
+
+# 计算各环境因素的变化率（日变化率）
+for col in x_columns:
+    # 计算日变化率：今天的值减去昨天的值
+    change_rate_data[f'{col}_变化率'] = filled_data[col].diff()
+    
+    # 填充第一行的NaN值（可以使用0或第二行的值）
+    change_rate_data[f'{col}_变化率'].fillna(0, inplace=True)
+
+# 添加生物指标列
+for col in y_columns:
+    change_rate_data[col] = filled_data[col]
+
+# 保存变化率数据
+change_rate_data.to_csv(f"{data_output_dir}/9月11日后环境因素变化率数据.csv", index=False)
+print(f"环境因素变化率数据已保存至: {data_output_dir}/9月11日后环境因素变化率数据.csv")
+
+# 定义变化率列名
+change_rate_columns = [f'{col}_变化率' for col in x_columns]
+
+# 对变化率数据进行相关性分析和绘图
+for x_col in change_rate_columns:
+    for y_col in y_columns:
+        # 获取有效数据（去除缺失值）
+        valid_data = change_rate_data[[x_col, y_col]].dropna()
+        
+        # 检查有效数据点是否足够
+        if len(valid_data) < 4:
+            print(f"列 {x_col} 和 {y_col} 的有效数据点不足，无法进行分析")
+            continue
+            
+        x = valid_data[x_col].values
+        y = valid_data[y_col].values
+        
+        # 创建散点图
+        plt.figure(figsize=(10, 6))
+        plt.scatter(x, y, c='purple', marker='o', s=40, alpha=0.7, label='数据点')
+        
+        # 添加线性拟合
+        try:
+            slope, intercept, r_value, p_value, std_err = stats.linregress(x, y)
+            line_x = np.linspace(min(x), max(x), 100)
+            line_y = slope * line_x + intercept
+            plt.plot(line_x, line_y, 'r-', linewidth=2, label=f'线性拟合: y = {slope:.4f}x + {intercept:.4f}')
+            
+            # 计算相关系数
+            pearson_corr, p_value = stats.pearsonr(x, y)
+            
+            # 添加多项式拟合（三次多项式）
+            poly_coef = np.polyfit(x, y, 3)
+            poly_fn = np.poly1d(poly_coef)
+            poly_x = np.linspace(min(x), max(x), 100)
+            poly_y = poly_fn(poly_x)
+            plt.plot(poly_x, poly_y, 'g--', linewidth=2, label='三次多项式拟合')
+            
+            # 添加LOESS平滑曲线（使用LOWESS算法近似）
+            from scipy.signal import savgol_filter
+            # 如果数据点足够多，使用Savitzky-Golay滤波器拟合平滑曲线
+            if len(x) > 10:
+                # 对数据点按x值排序
+                sort_indices = np.argsort(x)
+                x_sorted = x[sort_indices]
+                y_sorted = y[sort_indices]
+                
+                window_size = min(len(x) - 1 if len(x) % 2 == 0 else len(x), 11)
+                if window_size > 3:
+                    y_smooth = savgol_filter(y_sorted, window_size, 3)
+                    plt.plot(x_sorted, y_smooth, 'b:', linewidth=2, label='LOESS平滑')
+        except Exception as e:
+            print(f"拟合失败: {e}")
+        
+        # 设置图表标题和标签
+        original_col_name = x_col.replace('_变化率', '')
+        plt.title(f"{original_col_name}变化率 与 {y_col} 的相关性分析", fontsize=14)
+        plt.xlabel(f"{original_col_name}日变化率", fontsize=12)
+        plt.ylabel(y_col, fontsize=12)
+        plt.grid(True, linestyle='--', alpha=0.3)
+        
+        # 添加相关系数标注
+        try:
+            annotation_text = f"Pearson相关系数: {pearson_corr:.4f}\n"
+            annotation_text += f"p值: {p_value:.4g}\n"
+            annotation_text += f"线性拟合R²: {r_value**2:.4f}"
+            
+            plt.annotate(annotation_text, 
+                        xy=(0.05, 0.95), 
+                        xycoords='axes fraction',
+                        bbox=dict(boxstyle="round,pad=0.5", fc="white", ec="gray", alpha=0.8),
+                        fontsize=10,
+                        verticalalignment='top')
+        except:
+            print(f"无法计算 {x_col} 与 {y_col} 的相关性指标")
+        
+        plt.legend(loc='best', fontsize=10)
+        
+        # 保存图像
+        original_name = x_col.replace('_变化率', '')
+        plt.savefig(f"{change_rate_dir}/{original_name}_变化率_vs_{y_col}.png", dpi=300, bbox_inches='tight')
+        plt.close()
+
+# 生成变化率与生物指标的相关性热力图
+plt.figure(figsize=(12, 8))
+# 合并变化率和生物指标列
+corr_cols = change_rate_columns + y_columns
+change_rate_corr = change_rate_data[corr_cols].corr()
+
+im = plt.imshow(change_rate_corr, cmap='coolwarm', interpolation='none')
+
+# 添加相关系数标签
+for i in range(len(change_rate_corr.columns)):
+    for j in range(len(change_rate_corr.columns)):
+        text = plt.text(j, i, f"{change_rate_corr.iloc[i, j]:.2f}",
+                       ha="center", va="center", color="black" if abs(change_rate_corr.iloc[i, j]) < 0.7 else "white")
+
+plt.colorbar(im, label='相关系数')
+# 简化标签名称，去掉"_变化率"后缀
+simplified_labels = [col.replace('_变化率', '变化率') for col in change_rate_corr.columns]
+plt.xticks(range(len(change_rate_corr.columns)), simplified_labels, rotation=45, ha='right')
+plt.yticks(range(len(change_rate_corr.columns)), simplified_labels)
+plt.title('环境因子变化率与生物指标的相关性热力图', fontsize=16)
+plt.tight_layout()
+plt.savefig(f"{change_rate_dir}/变化率相关性热力图.png", dpi=300, bbox_inches='tight')
+plt.close()
+
+print(f"所有变化率相关性图像已保存至 {change_rate_dir} 目录")
+print("数据处理与可视化分析完成！")

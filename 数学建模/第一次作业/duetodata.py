@@ -6,22 +6,24 @@ import os
 import matplotlib as mpl
 
 # 设置中文字体支持
-mpl.rcParams['font.sans-serif'] = ['SimHei']  # 指定默认字体为黑体
-mpl.rcParams['axes.unicode_minus'] = False  # 解决保存图像时负号'-'显示为方块的问题
+mpl.rcParams['font.sans-serif'] = ['SimHei']
+mpl.rcParams['axes.unicode_minus'] = False
 
 # 读取CSV数据
 file_path = r"d:\chino_edu\数学建模\第一次作业\梭子蟹_归一化.csv"
 data = pd.read_csv(file_path)
 
-# 提取需要的列作为自变量和因变量
+# 创建保存图片和数据的目录
+output_dir = r"d:\chino_edu\数学建模\第一次作业\插值结果"
+data_output_dir = r"d:\chino_edu\数学建模\第一次作业\插值数据"
+os.makedirs(output_dir, exist_ok=True)
+os.makedirs(data_output_dir, exist_ok=True)
+
+# 提取需要进行插值可视化的列
 x_columns = ['AvgTN', '盐度1', 'pH1', '溶解氧', '导电率']
 y_columns = ['蜕壳数', '死亡数']
 
-# 创建保存图片的目录
-output_dir = r"d:\chino_edu\数学建模\第一次作业\插值结果"
-os.makedirs(output_dir, exist_ok=True)
-
-# 对每个x列和y列的组合进行三次样条插值并绘图
+# 绘制每一对x-y变量的插值图，这部分保持原来的功能
 for x_col in x_columns:
     for y_col in y_columns:
         # 筛选有效数据点（两列都有值的行）
@@ -68,4 +70,45 @@ for x_col in x_columns:
         plt.savefig(f"{output_dir}/{x_col}_vs_{y_col}.png", dpi=300, bbox_inches='tight')
         plt.close()
 
+# 保存整体插值数据表格
+# 获取所有数值列
+numeric_columns = data.select_dtypes(include=[np.number]).columns.tolist()
+
+# 选择一个基准列作为插值的参考（例如使用行索引作为参考）
+reference_points = np.arange(len(data))
+# 生成更密集的插值点
+reference_new = np.linspace(0, len(data)-1, 500)  # 生成500个插值点
+
+# 创建一个新的DataFrame用于存储插值后的数据
+interpolated_df = pd.DataFrame()
+
+# 对每一列单独进行插值
+for col in numeric_columns:
+    # 获取非缺失值的索引和数据
+    valid_indices = data[col].notna()
+    if valid_indices.sum() < 4:  # 至少需要4个点进行三次样条插值
+        print(f"列 {col} 有效数据点不足，跳过插值")
+        continue
+        
+    col_data = data.loc[valid_indices, col].values
+    col_indices = reference_points[valid_indices]
+    
+    # 对数据点按索引排序
+    sort_idx = np.argsort(col_indices)
+    col_indices_sorted = col_indices[sort_idx]
+    col_data_sorted = col_data[sort_idx]
+    
+    # 进行三次样条插值
+    try:
+        tck = interpolate.splrep(col_indices_sorted, col_data_sorted, s=0)
+        col_new = interpolate.splev(reference_new, tck, der=0)
+        interpolated_df[col] = col_new
+    except Exception as e:
+        print(f"列 {col} 插值失败: {str(e)}")
+
+# 保存完整的插值数据表格
+interpolated_df.to_csv(f"{data_output_dir}/完整插值数据.csv", index=False)
+print(f"完整插值数据已保存至: {data_output_dir}/完整插值数据.csv")
+
 print(f"所有图像已保存至 {output_dir} 目录")
+print(f"所有插值数据已保存至 {data_output_dir} 目录")

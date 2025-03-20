@@ -49,22 +49,33 @@ public class client {
                     long totalReceived = 0;
                     
                     // 接收并写入文件内容
+                    // 循环接收文件数据直到达到文件大小或数据流结束
                     while (totalReceived < fileSize) {
+                        // 从输入流读取数据到缓冲区
+                        // 参数说明: buffer-存储数据的缓冲区, 0-缓冲区的起始偏移量
+                        // Math.min计算本次最多读取的字节数(取缓冲区大小和剩余需接收的较小值)
                         bytesRead = dataIn.read(buffer, 0, (int) Math.min(buffer.length, fileSize - totalReceived));
+                        
+                        // 如果已到达流末尾(返回-1)，则中断循环
                         if (bytesRead == -1) {
                             break;
                         }
                         
+                        // 将读取到的数据写入到目标文件
                         bufferedOut.write(buffer, 0, bytesRead);
+                        
+                        // 更新已接收的总字节数
                         totalReceived += bytesRead;
                         
-                        // 打印进度
+                        // 计算并显示当前接收进度
                         if (fileSize > 0) {
+                            // 计算百分比进度
                             int progress = (int) ((totalReceived * 100) / fileSize);
+                            // \r使光标回到行首，覆盖之前显示的进度，实现进度条更新效果
                             System.out.print("\r接收进度: " + progress + "%");
                         }
                     }
-                    
+                    73
                     System.out.println("\n文件 " + fileName + " 接收完成，保存到: " + savePath);
                 }
             }

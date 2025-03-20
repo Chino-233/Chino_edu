@@ -8,7 +8,7 @@ public class server {
     
     public static void main(String[] args) {
         List<String> filesToSend = new ArrayList<>();
-        // 预先定义要发送的文件列表，根据实际情况修改路径
+        // 发送文件位置列表
         filesToSend.add("D:\\chino_edu\\互联网编程\\实验一\\testfiles\\chino.txt");
         filesToSend.add("D:\\chino_edu\\互联网编程\\实验一\\testfiles\\dream.txt");
         filesToSend.add("D:\\chino_edu\\互联网编程\\实验一\\testfiles\\love.txt");
@@ -22,13 +22,12 @@ public class server {
             try (Socket clientSocket = serverSocket.accept()) {
                 System.out.println("客户端已连接: " + clientSocket.getInetAddress());
                 
-                // 获取输出流
                 DataOutputStream dataOut = new DataOutputStream(clientSocket.getOutputStream());
                 
-                // 首先发送要发送的文件数量
+                // 获取发送要发送的文件数量
                 dataOut.writeInt(filesToSend.size());
                 
-                // 发送每个文件
+                // 发送文件
                 for (String filePath : filesToSend) {
                     File file = new File(filePath);
                     if (!file.exists()) {
@@ -38,7 +37,7 @@ public class server {
                         continue;
                     }
                     
-                    // 发送文件名(不包含路径)
+                    // 发送文件名
                     String fileName = file.getName();
                     dataOut.writeUTF(fileName);
                     

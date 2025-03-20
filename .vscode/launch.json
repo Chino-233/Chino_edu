@@ -3,6 +3,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "learn",
+            "request": "launch",
+            "mainClass": "互联网编程.编程练习.chino.learn",
+            "projectName": "chino_edu_9ed9a383"
+        },
+        {
+            "type": "java",
+            "name": "learn",
+            "request": "launch",
+            "mainClass": "互联网编程.编程练习.learn",
+            "projectName": "chino_edu_9ed9a383"
+        },
+        {
+            "type": "java",
             "name": "client",
             "request": "launch",
             "mainClass": "client",

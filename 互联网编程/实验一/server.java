@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class server {
-    private static final int PORT = 8888;
+    private static final int PORT = 1204;
     
     public static void main(String[] args) {
         List<String> filesToSend = new ArrayList<>();
@@ -30,18 +30,18 @@ public class server {
                 // 发送文件
                 for (String filePath : filesToSend) {
                     File file = new File(filePath);
+                    //防止输错传输文件
                     if (!file.exists()) {
                         System.out.println("文件不存在: " + filePath);
-                        // 发送空文件名表示跳过此文件
                         dataOut.writeUTF("");
                         continue;
                     }
                     
-                    // 发送文件名
+                    // 获取发送文件名
                     String fileName = file.getName();
                     dataOut.writeUTF(fileName);
                     
-                    // 发送文件大小
+                    // 获取发送文件大小
                     long fileSize = file.length();
                     dataOut.writeLong(fileSize);
                     
@@ -59,7 +59,7 @@ public class server {
                             dataOut.write(buffer, 0, bytesRead);
                             totalSent += bytesRead;
                             
-                            // 打印进度
+                            // 对于大型文件方便查看打印进度
                             if (fileSize > 0) {
                                 int progress = (int) ((totalSent * 100) / fileSize);
                                 System.out.print("\r发送进度: " + progress + "%");

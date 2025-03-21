@@ -2,12 +2,12 @@ import java.io.*;
 import java.net.*;
 
 public class client {
-    private static final String SERVER_IP = "127.0.0.1";
-    private static final int SERVER_PORT = 8888;
+    private static final String SERVER_IP = "127.0.0.1";//本地IP
+    private static final int SERVER_PORT = 1204;//保持端口一致并且不干扰其他电脑上的程序
     private static final String SAVE_DIRECTORY = "D:\\chino_edu\\互联网编程\\实验一\\received\\";
     
     public static void main(String[] args) {
-        // 确保保存目录存在
+        // 确定保存目录存在
         File saveDir = new File(SAVE_DIRECTORY);
         if (!saveDir.exists()) {
             saveDir.mkdirs();
@@ -28,7 +28,7 @@ public class client {
                 // 接收文件名
                 String fileName = dataIn.readUTF();
                 
-                // 空文件名表示服务器跳过了这个文件
+                // 与服务端相同，如果文件名为空，则跳过该文件
                 if (fileName.isEmpty()) {
                     System.out.println("服务器跳过了一个文件");
                     continue;
@@ -67,15 +67,12 @@ public class client {
                         // 更新已接收的总字节数
                         totalReceived += bytesRead;
                         
-                        // 计算并显示当前接收进度
+                        // 对于大型文件方便查看打印进度
                         if (fileSize > 0) {
-                            // 计算百分比进度
                             int progress = (int) ((totalReceived * 100) / fileSize);
-                            // \r使光标回到行首，覆盖之前显示的进度，实现进度条更新效果
                             System.out.print("\r接收进度: " + progress + "%");
                         }
                     }
-                    73
                     System.out.println("\n文件 " + fileName + " 接收完成，保存到: " + savePath);
                 }
             }

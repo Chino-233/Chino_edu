@@ -1,15 +1,13 @@
-% 5.3 过热蒸汽体积的插值计算
-% 已知数据
 T = [700, 720, 740, 760, 780];
 V = [0.0977, 0.1218, 0.1406, 0.1551, 0.1664];
 
-% 创建更密集的温度点用于绘图
+% 生成插值点
 T_dense = linspace(min(T), max(T), 1000);
 
-% 线性插值
+% 进行线性插值
 V_linear_dense = interp1(T, V, T_dense, 'linear');
 
-% 三次样条插值
+% 进行三次样条插值
 V_cubic_dense = interp1(T, V, T_dense, 'spline');
 
 % 计算T=750和T=770时的体积变化
@@ -25,7 +23,7 @@ fprintf('三次样条插值结果：\n');
 fprintf('T=750时，V=%.4f\n', V_cubic(1));
 fprintf('T=770时，V=%.4f\n', V_cubic(2));
 
-% 绘图
+% 画图
 figure('Position', [100, 100, 800, 500]);
 plot(T, V, 'ko', 'MarkerSize', 8, 'DisplayName', '原始数据点');
 hold on;

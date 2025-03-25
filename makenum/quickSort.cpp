@@ -185,11 +185,11 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
             double theoreticalTime;
             if (isQuadratic)
             {
-                theoreticalTime = standardTime * pow(static_cast<double>(size) / 10000.0, 2);
+                theoreticalTime = standardTime * pow(static_cast<double>(size) / 100000.0, 2);
             }
             else
             {
-                double nLogNRatio = (size * log2(size)) / (10000 * log2(10000));
+                double nLogNRatio = (size * log2(size)) / (100000 * log2(100000));
                 theoreticalTime = standardTime * nLogNRatio;
             }
 
@@ -311,7 +311,7 @@ int main() {
             }
             avgTimes[size] = total / times.size();
             
-            if (size == 10000) {
+            if (size == 100000) {
                 standardTime = avgTimes[size];
             }
         }
@@ -327,7 +327,7 @@ int main() {
             double actualTime = avgTimes[size];
             
             // 计算理论时间: O(n log n)
-            double nLogNRatio = (size * log2(size)) / (10000 * log2(10000));
+            double nLogNRatio = (size * log2(size)) / (100000 * log2(100000));
             double theoreticalTime = standardTime * nLogNRatio;
             
             // 计算差异

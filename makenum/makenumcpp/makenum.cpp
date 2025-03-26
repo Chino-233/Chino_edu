@@ -57,7 +57,7 @@ int main() {
     fs::create_directories(baseDir);
     
     // 定义不同的数据规模
-    vector<int> sizes = {1000, 10000, 100000, 1000000, 10000000};
+    vector<int> sizes = {250000, 500000, 750000};
     
     cout << "开始生成测试数据..." << endl;
     auto startTime = chrono::high_resolution_clock::now();

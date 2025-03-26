@@ -1,0 +1,34 @@
+========== 排序算法性能比较 ==========
+
+算法名称	时间复杂度	1000元素(ms)	10000元素(ms)	100000元素(ms)	1000000元素(ms)	10000000元素(ms)	
+--------------------------------------------------------------------------------------------
+ 	
+quickSort 	O(n²)    	0.14        	2.03        	23.68       	270.60      	3183.56     	
+quickSort 	O(n log n)	0.14        	2.17        	23.27       	266.68      	3146.45     	
+quickSort 	O(n log n)	0.19        	2.29        	25.87       	285.52      	3735.36     	
+mergeSort 	O(n log n)	0.45        	5.21        	40.63       	465.03      	5794.09     	
+quickSort 	O(n?)     	0.19        	2.63        	29.34       	351.28      	4291.03     	
+mergeSort 	O(n?)     	0.57        	6.61        	55.51       	597.83      	7338.64     	
+quickSort 	O(n²)    	0.13        	1.74        	21.96       	263.58      	3088.13     	
+quickSort 	O(n²)    	0.14        	1.83        	23.00       	265.52      	3075.58     	
+selectionSort	O(n²)    	2.31        	
+冒泡排序	O(n log n)	3.30        	
+bubbleSort	O(n log n)	3.93        	
+insertionSort	O(n log n)	1.26        	
+insertionSort	O(n log n)	1.76        	
+insertionSort	O(n log n)	1.88        	121.61      	
+mergeSort 	O(n log n)	0.32        	5.23        	43.72       	431.21      	5065.94     	
+bubbleSort	O(n²)    	3.25        	
+selectionSort	O(n²)    	2.94        	
+insertionSort	O(n²)    	1.28        	
+selectionSort	O(n²)    	3.17        	227.26      	29300.25    	N/A         	N/A         	
+insertionSort	O(n²)    	2.18        	180.14      	20494.06    	N/A         	N/A         	
+insertionSort	O(n²)    	1.31        	126.41      	18066.42    	N/A         	N/A         	
+bubbleSort	O(n²)    	3.21        	321.82      	35977.51    	
+selectionSort	O(n²)    	1.67        	115.02      	15247.23    	超时      	
+bubbleSort	O(n²)    	5.09        	439.99      	45365.99    	超时      	
+quickSort 	O(n log n)	0.15        	2.17        	24.56       	277.55      	3234.82     	
+mergeSort 	O(n log n)	0.38        	4.53        	45.17       	452.43      	5065.39     	
+insertionSort	O(n²)    	1.28        	82.77       	13224.68    	1192611.32  	
+selectionSort	O(n²)    	2.18        	143.86      	20315.42    	2075477.71  	
+bubbleSort	O(n²)    	4.59        	384.23      	51588.91    	5340281.69  	

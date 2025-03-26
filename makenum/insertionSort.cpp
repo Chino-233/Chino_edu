@@ -257,7 +257,7 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
 int main()
 {
     // 定义要测试的数据规模
-    vector<int> dataSizes = {1000, 10000, 100000, 1000000};
+    vector<int> dataSizes = {250000, 500000, 750000};
 
     // 基础路径
     string basePath = "d:\\chino_edu\\makenum\\testnum\\";
@@ -283,7 +283,7 @@ int main()
         }
         else if (size > 100000)
         {
-            numFiles = 2;  // 超过100000量级使用2个数据文件
+            numFiles = 1;  // 超过100000量级使用2个数据文件
         }
         else
         {

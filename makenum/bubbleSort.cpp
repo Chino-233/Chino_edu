@@ -11,12 +11,20 @@ namespace fs = std::filesystem;
 
 using namespace std;
 
-// 冒泡排序实现
-void bubbleSort(vector<int> &arr)
+// 冒泡排序实现（添加超时检测）
+bool bubbleSort(vector<int> &arr, const chrono::steady_clock::time_point &startTime, const double timeoutSeconds)
 {
     int n = arr.size();
     for (int i = 0; i < n - 1; i++)
     {
+        // 每轮外循环检查一次是否超时
+        auto currentTime = chrono::steady_clock::now();
+        double elapsedSeconds = chrono::duration<double>(currentTime - startTime).count();
+        if (elapsedSeconds > timeoutSeconds)
+        {
+            return false; // 超时返回false
+        }
+
         bool swapped = false;
         for (int j = 0; j < n - i - 1; j++)
         {
@@ -25,13 +33,26 @@ void bubbleSort(vector<int> &arr)
                 swap(arr[j], arr[j + 1]);
                 swapped = true;
             }
+
+            // 每1000次比较检查一次是否超时（避免频繁检查时间影响性能）
+            if (j % 1000 == 0)
+            {
+                currentTime = chrono::steady_clock::now();
+                elapsedSeconds = chrono::duration<double>(currentTime - startTime).count();
+                if (elapsedSeconds > timeoutSeconds)
+                {
+                    return false; // 超时返回false
+                }
+            }
         }
+        
         // 如果内层循环未发生交换，则数组已排序
         if (!swapped)
         {
             break;
         }
     }
+    return true; // 正常完成返回true
 }
 
 // 从文件加载数据
@@ -70,14 +91,23 @@ double testSortingFile(const string &filePath)
 
     cout << "  开始排序 " << data.size() << " 个元素..." << endl;
 
-    // 计时开始
-    auto startTime = chrono::high_resolution_clock::now();
+    // 计时开始 - 修改为使用steady_clock保持一致
+    auto startTime = chrono::steady_clock::now();
+    
+    // 设置超时限制：200分钟 = 12000秒
+    const double timeoutSeconds = 12000.0;
 
-    // 执行排序
-    bubbleSort(data);
+    // 执行排序（带超时检测）
+    bool completed = bubbleSort(data, startTime, timeoutSeconds);
+
+    if (!completed)
+    {
+        cout << "  排序已超时（超过" << timeoutSeconds << "秒）" << endl;
+        return timeoutSeconds * 1000; // 返回超时上限（转换为毫秒）
+    }
 
     // 计时结束
-    auto endTime = chrono::high_resolution_clock::now();
+    auto endTime = chrono::steady_clock::now();
 
     // 计算排序时间（微秒转毫秒）
     auto durationMicros = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
@@ -134,6 +164,17 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
         if (avgTimes.find(size) != avgTimes.end())
         {
             double actualTime = avgTimes.at(size);
+            
+            // 检查是否超时（12000秒 = 12000000毫秒）
+            if (actualTime >= 12000000.0)
+            {
+                outFile << setw(8) << size << "\t"
+                        << "超时(>12000秒)" << "\t"
+                        << "N/A\t"
+                        << "N/A\t"
+                        << "N/A" << endl;
+                continue;
+            }
 
             // 计算理论时间
             double theoreticalTime;
@@ -198,7 +239,15 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
     {
         if (avgTimes.find(size) != avgTimes.end())
         {
-            compOutFile << fixed << setprecision(2) << setw(12) << avgTimes.at(size) << "\t";
+            double time = avgTimes.at(size);
+            if (time >= 12000000.0)
+            {
+                compOutFile << setw(12) << "超时" << "\t";
+            }
+            else
+            {
+                compOutFile << fixed << setprecision(2) << setw(12) << time << "\t";
+            }
         }
         else
         {
@@ -214,7 +263,7 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
 int main()
 {
     // 定义要测试的数据规模
-    vector<int> dataSizes = {1000, 10000, 100000, 1000000, 10000000};
+    vector<int> dataSizes = {1000, 10000, 100000, 1000000};
 
     // 基础路径
     string basePath = "d:\\chino_edu\\makenum\\testnum\\";
@@ -222,19 +271,30 @@ int main()
     // 存储每个规模的测试结果
     map<int, vector<double>> testResults;
 
-    // 标准时间（10000规模的平均时间）
+    // 标准时间（100000规模的平均时间）
     double standardTime = 0.0;
 
-    cout << "开始测试不同数据规模的冒泡排序性能...\n"
-         << endl;
+    cout << "开始测试不同数据规模的冒泡排序性能...\n" << endl;
 
     // 对每个数据规模进行测试
     for (int size : dataSizes)
     {
         cout << "\n测试数据规模: " << size << " 个元素" << endl;
 
-        // 确定测试文件数量
-        int numFiles = (size >= 1000000) ? 5 : 20;
+        // 根据数据规模确定测试文件数量
+        int numFiles;
+        if (size == 100000)
+        {
+            numFiles = 5; // 对于100000量级使用5个数据文件
+        }
+        else if (size > 100000)
+        {
+            numFiles = 2;  // 超过100000量级使用2个数据文件
+        }
+        else
+        {
+            numFiles = 20; // 小于100000量级使用20个数据文件
+        }
 
         string sizeFolder = "n_" + to_string(size);
         string folderPath = basePath + sizeFolder;
@@ -254,6 +314,7 @@ int main()
             if (duration > 0)
             {
                 testResults[size].push_back(duration);
+                // 删除了超时后跳过剩余测试的代码
             }
         }
     }
@@ -264,14 +325,30 @@ int main()
     {
         if (!times.empty())
         {
-            double total = 0.0;
+            // 检查该规模是否有超时情况
+            bool hasTimeout = false;
             for (double time : times)
             {
-                total += time;
+                if (time >= 12000000.0) {
+                    hasTimeout = true;
+                    break;
+                }
             }
-            avgTimes[size] = total / times.size();
+            
+            if (hasTimeout) {
+                // 如果有超时，使用超时上限作为平均时间
+                avgTimes[size] = 12000000.0;
+            } else {
+                // 正常计算平均时间
+                double total = 0.0;
+                for (double time : times)
+                {
+                    total += time;
+                }
+                avgTimes[size] = total / times.size();
+            }
 
-            if (size == 100000)
+            if (size == 100000 && !hasTimeout)
             {
                 standardTime = avgTimes[size];
             }
@@ -279,8 +356,7 @@ int main()
     }
 
     // 计算理论时间和差距
-    cout << "\n\n========== 冒泡排序性能测试结果 ==========\n"
-         << endl;
+    cout << "\n\n========== 冒泡排序性能测试结果 ==========\n" << endl;
     cout << "数据规模\t平均时间(毫秒)\t理论时间(毫秒)\t时间差异\t差异率(%)" << endl;
     cout << "-----------------------------------------------------------------------------" << endl;
 
@@ -289,6 +365,12 @@ int main()
         if (avgTimes.find(size) != avgTimes.end())
         {
             double actualTime = avgTimes[size];
+            
+            // 检查是否超时
+            if (actualTime >= 12000000.0) {
+                cout << setw(8) << size << "\t超时(>12000秒)\tN/A\tN/A\tN/A" << endl;
+                continue;
+            }
 
             // 计算理论时间: O(n²)
             double theoreticalTime = standardTime * pow(static_cast<double>(size) / 100000.0, 2);
@@ -305,9 +387,9 @@ int main()
                  << setw(10) << timeDiff << "\t"
                  << setw(8) << diffRate << "%" << endl;
         }
-
     }
-    bool isQuadratic = false;
-    exportSortingResults("冒泡排序", dataSizes, avgTimes, standardTime, isQuadratic);
+    
+    bool isQuadratic = true;
+    exportSortingResults("bubbleSort", dataSizes, avgTimes, standardTime, isQuadratic);
     return 0;
 }

@@ -362,7 +362,7 @@ int main() {
                  << setw(8) << diffRate << "%" << endl;
         }
     }
-    bool isQuadratic = true;
+    bool isQuadratic = false;
     exportSortingResults("mergeSort", dataSizes, avgTimes, standardTime, isQuadratic);
     return 0;
 }

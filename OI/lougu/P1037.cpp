@@ -29,6 +29,18 @@ using namespace std;
 const int N = 1e5 + 10;
 typedef double db;
 #define ll long long
+void multiply(vector<int> &digits, int m) {
+    int carry = 0;
+    for (int i = 0; i < digits.size(); i++) {
+        int temp = digits[i] * m + carry;
+        digits[i] = temp % 10;
+        carry = temp / 10;
+    }
+    while (carry > 0) {
+        digits.push_back(carry % 10);
+        carry /= 10;
+    }
+}
 int main(){
     #ifndef ONLINE_JUDGE
 	freopen("in.in", "r", stdin);
@@ -36,39 +48,52 @@ int main(){
     #endif
     string n;
     cin>>n;
-    int k=0;
+    ll k=0;
     cin>>k;
-    int edge[10][10]={0};
-    for(int i=0;i<k;i++){
-        int m,n=114514;
-        cin>>m>>n;
-        edge[m][n]=1;
+    ll edge[10][10]={0};
+    for(ll i=0;i<k;i++){
+        ll m,a=114514;
+        cin>>m>>a;
+        edge[m][a]=1;
     }
-    queue<int>q;
-    int num[10]={0};
-    for(int d=0;d<10;d++){
+    queue<ll>q;
+    ll num[10]={0};
+    for(ll d=0;d<10;d++){
+        while (!q.empty())
+        {
+            q.pop();
+        } 
     q.push(d);
-    int flag[10]={0};
+    ll flag[10]={0};
+    flag[d]=1;
     while (!q.empty())
     {
-        int a=q.front();
+        ll a=q.front();
         q.pop();
-        for(int i=0;i<10;i++){
+        for(ll i=0;i<10;i++){
             if(edge[a][i]==1&&flag[i]!=1){
                 flag[i]=1;
                 q.push(i);
             }
         }
     }
-    for(int i=0;i<10;i++){
+    for(ll i=0;i<10;i++){
         num[d]+=flag[i];
     }
-    num[d]++;
+    //num[d]++;
     }
-    int result=1;
-    for(int i=0;i<n.length();i++){
-        result*=(num[n[i]-'0']);
+    /*
+    for(ll i=0;i<10;i++){
+        cout<<i<<":"<<num[i]<<endl;
     }
-    cout<<result;
+    */
+    vector<int>v={1};
+    for(ll i=0;i<n.length();i++){
+        int d=num[n[i]-'0'];
+        multiply(v,d);
+    }
+    for (int i = v.size() - 1; i >= 0; i--) {
+        cout << v[i];
+    }
     return 0;
 }

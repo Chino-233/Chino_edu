@@ -1,0 +1,63 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <cstring>
+#include <algorithm>
+#include <stdio.h>
+#include <math.h>
+#include <stdlib.h>
+#include <iomanip>
+#include <cmath>
+#include <map>
+#include <stack>
+#include <set>
+#include <unordered_map>
+#include <unordered_set>
+#include <bitset>
+#include <list>
+#include <deque>
+#include <forward_list>
+#include <array>
+#include <tuple>
+#include <utility>
+#include <memory>
+#include <functional>
+#include <iterator>
+#include <numeric>
+using namespace std;
+const int N = 1e5 + 10;
+typedef double db;
+#define ll long long
+
+int main(){
+    #ifndef ONLINE_JUDGE
+	freopen("in.in", "r", stdin);
+	freopen("out.out", "w", stdout);
+    #endif
+    ll n,m;
+    cin>>n>>m;
+    ll arr[100]={0};
+    ll temp=0;
+    for(int i=0;i<m;i++){
+        for(int i=0;i<n;i++){
+            cin>>temp;
+            arr[i]+=temp;
+        }
+    }
+    ll num=0;
+    for(int i=0;i<n;i++){
+        if(arr[i]>(m/2)){
+            arr[i]=1;
+        }
+        else{
+            arr[i]=0;
+        }
+        cin>>temp;
+        if(arr[i]==temp){
+            num++;
+        }
+    }
+    cout<<num<<endl;
+    return 0;
+}

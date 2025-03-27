@@ -278,7 +278,7 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
 
 int main() {
     // 定义要测试的数据规模，根据要求去掉100规模
-    vector<int> dataSizes = {1000, 10000, 100000, 1000000, 10000000};
+    vector<int> dataSizes = {1000, 10000, 100000,250000, 500000, 750000, 1000000, 10000000};
     
     // 基础路径
     string basePath = "d:\\chino_edu\\makenum\\testnum\\";

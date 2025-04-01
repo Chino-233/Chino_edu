@@ -40,19 +40,19 @@ int main(){
     ll numa=1;
     ll numb=1;
     string s;
-    int num=0;
-    int arr[20]={0};
-    int pos=0;
-    for(int i=1;i<20;i++){
+    ll num=0;
+    ll arr[20]={0};
+    ll pos=0;
+    for(ll i=1;i<20;i++){
         numa*=a;
         numb*=b;
         s=to_string(numa);
         //cout<<2<<"^"<<i<<":"<<s[0]<<endl;//2 4 8 1 3 6 5
-        int temp=s[0]-'0';
-        int flag=0;
+        ll temp=s[0]-'0';
+        ll flag=0;
         s=to_string(numb);
         //cout<<5<<"^"<<i<<":"<<s[0]<<endl;//5 2 1 6 3 7 9 4
-        for(int j=0;j<10;j++){
+        for(ll j=0;j<20;j++){
             if(arr[j]==temp*(s[0]-'0')){
                 flag=1;
             }

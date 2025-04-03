@@ -7,175 +7,177 @@
 #include <iomanip>
 #include <cmath>
 #include <filesystem>
-#include <atomic>
-#include <thread>
 namespace fs = std::filesystem;
-
 using namespace std;
 
-// 定义全局变量用于超时控制
-atomic<bool> timeout_flag(false);
-const int TIMEOUT_SECONDS = 300; // 5分钟超时限制
+//归并排序
+void merge(vector<int> &arr, int left, int mid, int right, const chrono::steady_clock::time_point &startTime, const double timeoutSeconds)
+{
+    auto currentTime = chrono::steady_clock::now();
+    double elapsedSeconds = chrono::duration<double>(currentTime - startTime).count();
+    if (elapsedSeconds > timeoutSeconds)
+    {
+        return;
+    }
 
-// 归并排序实现
-void merge(vector<int>& arr, int left, int mid, int right) {
     int n1 = mid - left + 1;
     int n2 = right - mid;
-    
-    // 创建临时数组
+
     vector<int> L(n1), R(n2);
-    
-    // 复制数据到临时数组
+
     for (int i = 0; i < n1; i++)
         L[i] = arr[left + i];
     for (int j = 0; j < n2; j++)
         R[j] = arr[mid + 1 + j];
-    
-    // 合并临时数组
+
     int i = 0, j = 0, k = left;
-    while (i < n1 && j < n2) {
-        if (L[i] <= R[j]) {
+    while (i < n1 && j < n2)
+    {
+        if (L[i] <= R[j])
+        {
             arr[k] = L[i];
             i++;
-        } else {
+        }
+        else
+        {
             arr[k] = R[j];
             j++;
         }
         k++;
-        
-        // 检查是否超时
-        if (timeout_flag.load()) {
-            return;
+
+        if (k % 1000 == 0)
+        {
+            currentTime = chrono::steady_clock::now();
+            elapsedSeconds = chrono::duration<double>(currentTime - startTime).count();
+            if (elapsedSeconds > timeoutSeconds)
+            {
+                return;
+            }
         }
     }
-    
-    // 复制L[]的剩余元素
-    while (i < n1) {
+
+    while (i < n1)
+    {
         arr[k] = L[i];
         i++;
         k++;
     }
-    
-    // 复制R[]的剩余元素
-    while (j < n2) {
+
+    while (j < n2)
+    {
         arr[k] = R[j];
         j++;
         k++;
     }
 }
 
-void mergeSortImpl(vector<int>& arr, int left, int right) {
-    // 检查是否超时
-    if (timeout_flag.load()) {
+void mergeSortImpl(vector<int> &arr, int left, int right, const chrono::steady_clock::time_point &startTime, const double timeoutSeconds)
+{
+    auto currentTime = chrono::steady_clock::now();
+    double elapsedSeconds = chrono::duration<double>(currentTime - startTime).count();
+    if (elapsedSeconds > timeoutSeconds)
+    {
         return;
     }
-    
-    if (left >= right)
-        return;
-    
-    // 找出中间点
-    int mid = left + (right - left) / 2;
-    
-    // 对左右两半分别排序
-    mergeSortImpl(arr, left, mid);
-    mergeSortImpl(arr, mid + 1, right);
-    
-    // 合并已排序的两半
-    merge(arr, left, mid, right);
+
+    if (left < right)
+    {
+        int mid = left + (right - left) / 2;
+
+        mergeSortImpl(arr, left, mid, startTime, timeoutSeconds);
+        mergeSortImpl(arr, mid + 1, right, startTime, timeoutSeconds);
+
+        merge(arr, left, mid, right, startTime, timeoutSeconds);
+    }
 }
 
-void mergeSort(vector<int>& arr) {
-    mergeSortImpl(arr, 0, arr.size() - 1);
+bool mergeSort(vector<int> &arr, const chrono::steady_clock::time_point &startTime, const double timeoutSeconds)
+{
+    mergeSortImpl(arr, 0, arr.size() - 1, startTime, timeoutSeconds);
+
+    auto currentTime = chrono::steady_clock::now();
+    double elapsedSeconds = chrono::duration<double>(currentTime - startTime).count();
+    if (elapsedSeconds > timeoutSeconds)
+    {
+        return false;
+    }
+    return true;
 }
 
-// 从文件加载数据
-vector<int> loadDataFromFile(const string& filePath) {
+//从文件加载数据
+vector<int> loadDataFromFile(const string &filePath)
+{
     ifstream file(filePath);
     vector<int> data;
-    
-    if (!file.is_open()) {
+
+    if (!file.is_open())
+    {
         cerr << "无法打开文件: " << filePath << endl;
         return data;
     }
-    
+
     int value;
-    while (file >> value) {
+    while (file >> value)
+    {
         data.push_back(value);
     }
-    
+
     file.close();
     return data;
 }
 
-// 超时监控函数
-void timeoutMonitor() {
-    // 等待5分钟
-    this_thread::sleep_for(chrono::seconds(TIMEOUT_SECONDS));
-    // 设置超时标志
-    timeout_flag.store(true);
-    cout << "\n  *** 检测到排序超时(" << TIMEOUT_SECONDS << "秒)，中断当前排序操作 ***" << endl;
-}
-
-// 对指定文件的数据进行排序测试
-double testSortingFile(const string& filePath) {
+//对指定文件的数据进行排序测试
+double testSortingFile(const string &filePath)
+{
     cout << "  读取文件: " << filePath << endl;
     vector<int> data = loadDataFromFile(filePath);
-    
-    if (data.empty()) {
+
+    if (data.empty())
+    {
         cerr << "  文件为空或读取失败，跳过此测试" << endl;
         return -1.0;
     }
-    
+
     cout << "  开始排序 " << data.size() << " 个元素..." << endl;
-    
-    // 重置超时标志
-    timeout_flag.store(false);
-    
-    // 启动超时监控线程
-    thread timeout_thread(timeoutMonitor);
-    timeout_thread.detach(); // 分离线程，让它在后台运行
-    
-    // 计时开始
-    auto startTime = chrono::high_resolution_clock::now();
-    
-    // 执行排序
-    mergeSort(data);
-    
-    // 计时结束
-    auto endTime = chrono::high_resolution_clock::now();
-    
-    // 如果发生超时，返回特殊值
-    if (timeout_flag.load()) {
-        return -2.0; // -2表示超时
+
+    auto startTime = chrono::steady_clock::now();
+    const double timeoutSeconds = 12000.0;
+    bool completed = mergeSort(data, startTime, timeoutSeconds);
+
+    if (!completed)
+    {
+        cout << "  排序已超时（超过" << timeoutSeconds << "秒）" << endl;
+        return timeoutSeconds * 1000;
     }
-    
-    // 计算排序时间（微秒转毫秒）
+
+    auto endTime = chrono::steady_clock::now();
     auto durationMicros = chrono::duration_cast<chrono::microseconds>(endTime - startTime).count();
     double durationMs = static_cast<double>(durationMicros) / 1000.0;
-    
-    // 验证排序是否成功
+
     bool sorted = true;
-    for (size_t i = 1; i < data.size(); i++) {
-        if (data[i - 1] > data[i]) {
+    for (size_t i = 1; i < data.size(); i++)
+    {
+        if (data[i - 1] > data[i])
+        {
             sorted = false;
             break;
         }
     }
-    
-    if (!sorted) {
+
+    if (!sorted)
+    {
         cerr << "  警告: 排序结果错误!" << endl;
     }
-    
+
     cout << "  完成: " << fixed << setprecision(6) << durationMs << " 毫秒" << endl;
     return durationMs;
 }
-void exportSortingResults(const string &algorithmName,const vector<int> &dataSizes,const map<int, double> &avgTimes,double standardTime,bool isQuadratic)
+
+//输出与存储
+void exportSortingResults(const string &algorithmName, const vector<int> &dataSizes, const map<int, double> &avgTimes, double standardTime, bool isQuadratic)
 {
-    // 创建结果文件夹
     string resultDir = "d:\\chino_edu\\makenum\\result\\";
     fs::create_directories(resultDir);
-
-    // 为每个算法创建单独的结果文件
     string resultFile = resultDir + algorithmName + "_results.txt";
     ofstream outFile(resultFile);
 
@@ -185,7 +187,6 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
         return;
     }
 
-    // 写入表头
     outFile << "========== " << algorithmName << "性能测试结果 ==========\n"
             << endl;
     outFile << "时间复杂度: " << (isQuadratic ? "O(n²)" : "O(n log n)") << endl
@@ -193,14 +194,22 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
     outFile << "数据规模\t平均时间(毫秒)\t理论时间(毫秒)\t时间差异\t差异率(%)" << endl;
     outFile << "-----------------------------------------------------------------------------" << endl;
 
-    // 写入数据
     for (int size : dataSizes)
     {
         if (avgTimes.find(size) != avgTimes.end())
         {
             double actualTime = avgTimes.at(size);
+            
+            if (actualTime >= 12000000.0)
+            {
+                outFile << setw(8) << size << "\t"
+                        << "超时(>12000秒)" << "\t"
+                        << "N/A\t"
+                        << "N/A\t"
+                        << "N/A" << endl;
+                continue;
+            }
 
-            // 计算理论时间
             double theoreticalTime;
             if (isQuadratic)
             {
@@ -212,11 +221,9 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
                 theoreticalTime = standardTime * nLogNRatio;
             }
 
-            // 计算差异
             double timeDiff = actualTime - theoreticalTime;
             double diffRate = (theoreticalTime > 0) ? (timeDiff / theoreticalTime) * 100.0 : 0.0;
 
-            // 格式化输出
             outFile << fixed << setprecision(2);
             outFile << setw(8) << size << "\t"
                     << setw(12) << actualTime << "\t"
@@ -229,7 +236,6 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
     outFile.close();
     cout << "结果已保存到: " << resultFile << endl;
 
-    // 同时添加到综合比较文件
     string comparisonFile = resultDir + "sorting_algorithms_comparison.txt";
     bool fileExists = fs::exists(comparisonFile);
 
@@ -240,7 +246,6 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
         return;
     }
 
-    // 如果文件不存在，添加表头
     if (!fileExists)
     {
         compOutFile << "========== 排序算法性能比较 ==========\n"
@@ -255,7 +260,6 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
         compOutFile << "--------------------------------------------------------------------------------------------" << endl;
     }
 
-    // 添加当前算法数据
     compOutFile << left << setw(10) << algorithmName << "\t";
     compOutFile << left << setw(10) << (isQuadratic ? "O(n²)" : "O(n log n)") << "\t";
 
@@ -263,7 +267,15 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
     {
         if (avgTimes.find(size) != avgTimes.end())
         {
-            compOutFile << fixed << setprecision(2) << setw(12) << avgTimes.at(size) << "\t";
+            double time = avgTimes.at(size);
+            if (time >= 12000000.0)
+            {
+                compOutFile << setw(12) << "超时" << "\t";
+            }
+            else
+            {
+                compOutFile << fixed << setprecision(2) << setw(12) << time << "\t";
+            }
         }
         else
         {
@@ -276,93 +288,120 @@ void exportSortingResults(const string &algorithmName,const vector<int> &dataSiz
     cout << "结果已添加到比较文件: " << comparisonFile << endl;
 }
 
-int main() {
-    // 定义要测试的数据规模，根据要求去掉100规模
-    vector<int> dataSizes = {1000, 10000, 100000,250000, 500000, 750000, 1000000, 10000000};
-    
-    // 基础路径
+int main()
+{
+    //定义要测试的数据规模
+    vector<int> dataSizes = {250000, 500000, 750000};
+    //路径
     string basePath = "d:\\chino_edu\\makenum\\testnum\\";
-    
-    // 存储每个规模的测试结果
     map<int, vector<double>> testResults;
-    
-    // 标准时间（10000规模的平均时间）
     double standardTime = 0.0;
-    
+
     cout << "开始测试不同数据规模的归并排序性能...\n" << endl;
-    
-    // 对每个数据规模进行测试
-    for (int size : dataSizes) {
+
+    for (int size : dataSizes)
+    {
         cout << "\n测试数据规模: " << size << " 个元素" << endl;
-        
-        // 确定测试文件数量
-        int numFiles = (size >= 1000000) ? 5 : 20;
-        
+
+        int numFiles;
+        if (size == 100000)
+        {
+            numFiles = 20;
+        }
+        else if (size > 100000)
+        {
+            numFiles = 20;
+        }
+        else
+        {
+            numFiles = 20;
+        }
+
         string sizeFolder = "n_" + to_string(size);
         string folderPath = basePath + sizeFolder;
-        
-        for (int fileNum = 1; fileNum <= numFiles; fileNum++) {
+
+        for (int fileNum = 1; fileNum <= numFiles; fileNum++)
+        {
             string filePath = folderPath + "\\data_" + to_string(fileNum) + ".txt";
-            
-            // 检查文件是否存在
-            if (!fs::exists(filePath)) {
+
+            if (!fs::exists(filePath))
+            {
                 cerr << "  文件不存在: " << filePath << endl;
                 continue;
             }
-            
+
             double duration = testSortingFile(filePath);
-            if (duration > 0) {
+            if (duration > 0)
+            {
                 testResults[size].push_back(duration);
-            } else if (duration == -2.0) {
-                cout << "  跳过剩余测试文件，此规模数据排序耗时过长" << endl;
-                break; // 如果一个文件超时，跳过该规模的其他测试
             }
         }
     }
-    
-    // 计算各规模的平均排序时间
+
     map<int, double> avgTimes;
-    for (const auto& [size, times] : testResults) {
-        if (!times.empty()) {
-            double total = 0.0;
-            for (double time : times) {
-                total += time;
+    for (const auto &[size, times] : testResults)
+    {
+        if (!times.empty())
+        {
+            bool hasTimeout = false;
+            for (double time : times)
+            {
+                if (time >= 12000000.0) {
+                    hasTimeout = true;
+                    break;
+                }
             }
-            avgTimes[size] = total / times.size();
             
-            if (size == 100000) {
+            if (hasTimeout) {
+                avgTimes[size] = 12000000.0;
+            } else {
+                double total = 0.0;
+                for (double time : times)
+                {
+                    total += time;
+                }
+                avgTimes[size] = total / times.size();
+            }
+
+            if (size == 100000 && !hasTimeout)
+            {
                 standardTime = avgTimes[size];
             }
         }
     }
-    
-    // 计算理论时间和差距
+
     cout << "\n\n========== 归并排序性能测试结果 ==========\n" << endl;
     cout << "数据规模\t平均时间(毫秒)\t理论时间(毫秒)\t时间差异\t差异率(%)" << endl;
     cout << "-----------------------------------------------------------------------------" << endl;
-    
-    for (int size : dataSizes) {
-        if (avgTimes.find(size) != avgTimes.end()) {
+
+    for (int size : dataSizes)
+    {
+        if (avgTimes.find(size) != avgTimes.end())
+        {
             double actualTime = avgTimes[size];
+            
+            if (actualTime >= 12000000.0) {
+                cout << setw(8) << size << "\t超时(>12000秒)\tN/A\tN/A\tN/A" << endl;
+                continue;
+            }
             
             // 计算理论时间: O(n log n)
             double nLogNRatio = (size * log2(size)) / (100000 * log2(100000));
             double theoreticalTime = standardTime * nLogNRatio;
-            
-            // 计算差异
+
             double timeDiff = actualTime - theoreticalTime;
             double diffRate = (theoreticalTime > 0) ? (timeDiff / theoreticalTime) * 100.0 : 0.0;
-            
-            // 格式化输出
+
             cout << fixed << setprecision(2);
-            cout << setw(8) << size << "\t" 
+            cout << setw(8) << size << "\t"
                  << setw(12) << actualTime << "\t"
                  << setw(12) << theoreticalTime << "\t"
                  << setw(10) << timeDiff << "\t"
                  << setw(8) << diffRate << "%" << endl;
         }
     }
-    bool isQuadratic = false;
+    
+    bool isQuadratic = false; 
     exportSortingResults("mergeSort", dataSizes, avgTimes, standardTime, isQuadratic);
     return 0;
 }

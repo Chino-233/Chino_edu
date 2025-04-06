@@ -4,3 +4,5 @@ makenum/result/chartssave/*
 makenum/result/AAA/*
 OI/lougu/contest/*
 OI/lougu/**/*.exe
+OI/lougu/in.in
+OI/lougu/out.out

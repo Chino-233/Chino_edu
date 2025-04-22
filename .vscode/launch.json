@@ -3,6 +3,55 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "learn.Main",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "learn.Java.Main",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
+            "name": "HashMapTutorial",
+            "request": "launch",
+            "mainClass": "learn.java.HashMapTutorial",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
+            "name": "ArrayListTutorial",
+            "request": "launch",
+            "mainClass": "learn.java.ArrayListTutorial",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
+            "name": "Chino",
+            "request": "launch",
+            "mainClass": "learn.java.Chino",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "learn.java.Main",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
+            "name": "Main",
+            "request": "launch",
+            "mainClass": "OI.Java.Main",
+            "projectName": "Chino_edu_164bc363"
+        },
+        {
+            "type": "java",
             "name": "learn",
             "request": "launch",
             "mainClass": "互联网编程.编程练习.chino.learn",

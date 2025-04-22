@@ -61,7 +61,10 @@ int main(){
         edge[i][0]=m;
         edge[i][1]=k;
     }
-    for(int i=0;i<100000;i++){
+    for(int i=0;i<10000;i++){
+        if(arr[0]==0&&arr[1]==7&&arr[2]==1&&arr[3]==3&&arr[4]==4&&arr[5]==5&&arr[6]==2&&arr[7]==6){
+            int a=0;
+        }
         if(judge(edge,arr,n)){
             for(int j=0;j<8;j++){
                 cout<<mp[arr[j]]<<endl;
@@ -70,5 +73,14 @@ int main(){
         }
         next_permutation(arr,arr+8);
     }
+    //0 7 1 3 4 5 2 6
     return 0;
 }
+/*
+3
+6 2
+Buttercup must be milked beside Bella
+5 2
+Blue must be milked beside Bella
+7 0
+Sue must be milked beside Beatrice*/

@@ -1,0 +1,1 @@
+{"name":"Local: P12412","url":"d:\\chino_edu\\OI\\lougu\\P12412.cpp","tests":[{"id":1746531872953,"input":"2 3\n3 2","output":"2"},{"id":1746531879521,"input":"3 4\n3 3 3","output":"1"},{"id":1746531892858,"input":"6 5\n1 1 4 5 1 4","output":"0"}],"interactive":false,"memoryLimit":1024,"timeLimit":3000,"srcPath":"d:\\chino_edu\\OI\\lougu\\P12412.cpp","group":"local","local":true}

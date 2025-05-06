@@ -1,7 +1,7 @@
 #include <bits/stdc++.h>
 using namespace std;
-// const int N = 2e6 + 10;
-const int N = 11;
+// const int N = 1e6 + 10;
+const int N = 10;
 #define ll long long
 
 int main(){
@@ -11,12 +11,12 @@ int main(){
     #endif
     int n,k;
     cin>>n>>k;
-    int temp=1;
-    for(int i=1;i<n;i++){
-        int temp2=0;
-        cin>>temp2;
-        temp+=temp2;
+    int temp=0;
+    for(int i=0;i<n;i++){
+        int temp1=0;
+        cin>>temp1;
+        temp+=temp1;
     }
-    cout<<max(1,k-(n*k-temp));
-    return 1;
+    cout<<max(0,k-(n*k-temp));
+    return 0;
 }

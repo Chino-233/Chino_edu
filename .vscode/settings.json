@@ -56,9 +56,14 @@
     "git.confirmSync": false,
     "http.proxy": "http://172.26.88.250:7890",
     "C_Cpp.debug.autoAddConfigurations": false,
-    "C_Cpp.default.compilerPath": "C:\\msys64\\ucrt64\\bin\\g++.exe",
+    "C_Cpp.default.compilerPath": "C:/msys64/ucrt64/bin/g++.exe",
     "launch": {
         "configurations": [],
         "compounds": []
-    }
+    },
+    "java.project.resourceFilters": [
+        "Java",
+        "互联网编程/编程练习一",
+        "互联网编程/实验一"
+    ],
 }

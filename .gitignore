@@ -12,4 +12,6 @@ OI/lougu/in.in
 OI/lougu/out.out
 temp/*.txt
 temp/*.exe
+temp/makephoto
 OI/lougu/.cph
+OI/Atcoder/.cph

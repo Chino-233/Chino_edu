@@ -114,7 +114,43 @@ def closest_crossing_pair_with_steps(points_by_y, mid_x, min_dist, current_min_p
     
     # 在带状区域内查找最近点对
     for i in range(strip_size):
+        # 添加新步骤：记录当前遍历到的点
+        steps.append({
+            'type': 'strip_traversal',
+            'current_point': strip[i],
+            'strip_points': strip,
+            'mid_x': mid_x,
+            'width': min_dist,
+            'current_min_pair': closest_pair if closest_pair else current_min_pair,
+            'current_min_dist': min(min_strip_dist, min_dist) if closest_pair else min_dist,
+            'global_min_pair': global_min_pair,
+            'global_min_dist': global_min_dist
+        })
+        
         j = i + 1
+        # 计算可能需要比较的后续点
+        potential_compare_points = []
+        for k in range(j, strip_size):
+            if (strip[k].y - strip[i].y) < min_dist:
+                potential_compare_points.append(strip[k])
+            else:
+                break
+        
+        # 记录当前点与哪些点需要比较
+        if potential_compare_points:
+            steps.append({
+                'type': 'strip_potential_comparisons',
+                'current_point': strip[i],
+                'potential_points': potential_compare_points,
+                'strip_points': strip,
+                'mid_x': mid_x,
+                'width': min_dist,
+                'current_min_pair': closest_pair if closest_pair else current_min_pair,
+                'current_min_dist': min(min_strip_dist, min_dist) if closest_pair else min_dist,
+                'global_min_pair': global_min_pair,
+                'global_min_dist': global_min_dist
+            })
+        
         while j < strip_size and (strip[j].y - strip[i].y) < min_dist:
             current_pair = (strip[i], strip[j])
             dist = Point.distance(strip[i], strip[j])
@@ -439,6 +475,84 @@ def visualize_step(ax, step, points, final_closest=None, final_min_dist=float('i
         
         ax.axvline(x=mid_x, color='purple', linestyle='--')
         ax.text(mid_x, min(ys) - 50, f"中线", color='purple')
+        
+    elif step_type == 'strip_traversal':
+        # 显示带状区域
+        mid_x = step['mid_x']
+        width = step['width']
+        strip_min_x = mid_x - width
+        strip_max_x = mid_x + width
+        
+        # 绘制带状区域
+        y_min, y_max = ax.get_ylim()
+        rect = plt.Rectangle((strip_min_x, y_min), 
+                            width * 2, y_max - y_min, 
+                            color='lightgreen', alpha=0.2)
+        ax.add_patch(rect)
+        
+        # 绘制中线
+        ax.axvline(x=mid_x, color='purple', linestyle='--')
+        ax.text(mid_x, min(ys) - 50, f"中线", color='purple')
+        
+        # 高亮带状区域内的所有点
+        strip_points = step['strip_points']
+        ax.scatter([p.x for p in strip_points], [p.y for p in strip_points], 
+                  c='green', s=30, alpha=0.6)
+        
+        # 特别高亮当前正在处理的点
+        current_point = step['current_point']
+        ax.scatter([current_point.x], [current_point.y], c='purple', s=80, marker='*')
+        ax.annotate(f"当前处理点 (ID:{current_point.id})", 
+                   (current_point.x, current_point.y),
+                   xytext=(10, 10), textcoords='offset points',
+                   bbox=dict(boxstyle='round,pad=0.5', fc='lavender', alpha=0.9))
+    
+    elif step_type == 'strip_potential_comparisons':
+        # 显示带状区域
+        mid_x = step['mid_x']
+        width = step['width']
+        strip_min_x = mid_x - width
+        strip_max_x = mid_x + width
+        
+        # 绘制带状区域
+        y_min, y_max = ax.get_ylim()
+        rect = plt.Rectangle((strip_min_x, y_min), 
+                            width * 2, y_max - y_min, 
+                            color='lightgreen', alpha=0.2)
+        ax.add_patch(rect)
+        
+        # 绘制中线
+        ax.axvline(x=mid_x, color='purple', linestyle='--')
+        ax.text(mid_x, min(ys) - 50, f"中线", color='purple')
+        
+        # 高亮带状区域内的所有点
+        strip_points = step['strip_points']
+        ax.scatter([p.x for p in strip_points], [p.y for p in strip_points], 
+                  c='green', s=30, alpha=0.6)
+        
+        # 特别高亮当前正在处理的点
+        current_point = step['current_point']
+        ax.scatter([current_point.x], [current_point.y], c='purple', s=80, marker='*')
+        ax.annotate(f"当前点 (ID:{current_point.id})", 
+                   (current_point.x, current_point.y),
+                   xytext=(10, 10), textcoords='offset points',
+                   bbox=dict(boxstyle='round,pad=0.5', fc='lavender', alpha=0.9))
+        
+        # 高亮潜在的比较点
+        potential_points = step['potential_points']
+        if potential_points:
+            ax.scatter([p.x for p in potential_points], [p.y for p in potential_points], 
+                      c='orange', s=50, marker='o')
+            
+            # 绘制从当前点到所有潜在比较点的连线
+            for p in potential_points:
+                ax.plot([current_point.x, p.x], [current_point.y, p.y], 
+                       color='orange', linestyle=':', linewidth=1, alpha=0.7)
+            
+            ax.annotate(f"将比较的{len(potential_points)}个点", 
+                       (potential_points[0].x, potential_points[0].y),
+                       xytext=(10, -30), textcoords='offset points',
+                       bbox=dict(boxstyle='round,pad=0.5', fc='bisque', alpha=0.9))
     
     # 显示全局过程中的最小点对（如果有且启用）- 蓝色
     global_min_pair = step.get('global_min_pair')
@@ -459,42 +573,20 @@ def visualize_step(ax, step, points, final_closest=None, final_min_dist=float('i
                    ha='center',
                    bbox=dict(boxstyle='round,pad=0.5', fc='lightblue', alpha=0.7))
     
-    # 显示当前步骤的最小点对（如果有且启用）- 红色
-    current_min_pair = step.get('current_min_pair')
-    current_min_dist = step.get('current_min_dist', float('inf'))
-    
-    if current_min_pair and show_current_result:
-        ax.plot([current_min_pair[0].x, current_min_pair[1].x], 
-               [current_min_pair[0].y, current_min_pair[1].y], 
-               'r-', linewidth=2)
-        ax.scatter([current_min_pair[0].x, current_min_pair[1].x], 
-                  [current_min_pair[0].y, current_min_pair[1].y], 
-                  c='red', s=80)
+    # 其余代码保持不变...
+
+    # 设置标题，添加更详细的步骤类型说明
+    title = f"算法执行过程 - "
+    if step_type == 'strip_traversal':
+        title += "带状区域遍历点"
+    elif step_type == 'strip_potential_comparisons':
+        title += "识别需要比较的点"
+    elif step_type == 'strip_compare':
+        title += "带状区域点对比较"
+    else:
+        title += f"步骤类型: {step_type}"
         
-        # 显示当前最小距离
-        mid_x = (current_min_pair[0].x + current_min_pair[1].x) / 2
-        mid_y = (current_min_pair[0].y + current_min_pair[1].y) / 2
-        ax.annotate(f"当前步骤最小距离: {current_min_dist:.2f}", (mid_x, mid_y + 20), 
-                   ha='center',
-                   bbox=dict(boxstyle='round,pad=0.5', fc='yellow', alpha=0.7))
-    
-    # 显示最终的全局最小点对（如果有且启用）- 绿色
-    if final_closest and show_final_result:
-        ax.plot([final_closest[0].x, final_closest[1].x], 
-               [final_closest[0].y, final_closest[1].y], 
-               'g--', linewidth=2)
-        ax.scatter([final_closest[0].x, final_closest[1].x], 
-                  [final_closest[0].y, final_closest[1].y], 
-                  c='green', s=80, marker='*')
-        
-        # 显示全局最小距离
-        mid_x = (final_closest[0].x + final_closest[1].x) / 2
-        mid_y = (final_closest[0].y + final_closest[1].y) / 2
-        ax.annotate(f"全局最小距离: {final_min_dist:.2f}", (mid_x, mid_y - 20), 
-                   ha='center',
-                   bbox=dict(boxstyle='round,pad=0.5', fc='lightgreen', alpha=0.7))
-    
-    ax.set_title(f"算法执行过程 - 步骤类型: {step_type}")
+    ax.set_title(title)
     ax.set_xlabel("X 坐标")
     ax.set_ylabel("Y 坐标")
     ax.grid(True, alpha=0.3)
@@ -502,7 +594,6 @@ def visualize_step(ax, step, points, final_closest=None, final_min_dist=float('i
     # 调整显示范围，确保所有点都可见
     ax.set_xlim(min(xs) - 50, max(xs) + 50)
     ax.set_ylim(min(ys) - 50, max(ys) + 50)
-
 # 主程序 - 交互式版本
 def main():
     # 创建图形和轴

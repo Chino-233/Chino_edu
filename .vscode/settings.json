@@ -66,4 +66,8 @@
         "互联网编程/编程练习一",
         "互联网编程/实验一"
     ],
+    "files.associations": {
+        "iostream": "cpp",
+        "iomanip": "cpp"
+    },
 }

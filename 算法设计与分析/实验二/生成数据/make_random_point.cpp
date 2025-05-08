@@ -1,11 +1,4 @@
-#include <iostream>
-#include <vector>
-#include <random>
-#include <fstream>
-#include <string>
-#include <ctime>
-#include <algorithm>
-#include <cmath>
+#include <bits/stdc++.h>
 using namespace std;
 struct Point {
     double x, y;
@@ -75,31 +68,42 @@ vector<Point> loadPointsFromFile(const string& filename) {
 }
 
 int main(int argc, char* argv[]) {
-    int N = 1000000; // 默认生成10万个点
+    // 默认的点数量列表
+    vector<int> pointCounts = {20000,40000,80000};
     
+    // 如果有命令行参数，则使用命令行参数替换默认列表
     if (argc > 1) {
-        N = atoi(argv[1]);
-        if (N <= 0) {
-            cerr << "点的数量必须为正整数" << endl;
-            return 1;
+        pointCounts.clear();
+        for (int i = 1; i < argc; i++) {
+            int count = atoi(argv[i]);
+            if (count <= 0) {
+                cerr << "点的数量必须为正整数: " << argv[i] << endl;
+                return 1;
+            }
+            pointCounts.push_back(count);
         }
     }
     
-    // 生成随机点
-    cout << "正在生成 " << N << " 个随机点..." << endl;
-    vector<Point> points = generateRandomPoints(N);
-    
-    // 保存到文件
-    string filename = "points_" + to_string(N) + ".txt";
-    if (savePointsToFile(points, filename)) {
-        cout << "成功生成 " << N << " 个随机点并保存到文件 " << filename << endl;
-    }
-    
-    // 输出前10个点作为示例
-    cout << "\n生成的前10个点示例：" << endl;
-    int show_count = min(10, N);
-    for (int i = 0; i < show_count; i++) {
-        cout << "点 " << i + 1 << ": (" << points[i].x << ", " << points[i].y << ")" << endl;
+    // 对每个点数量生成并保存点集
+    for (int N : pointCounts) {
+        // 生成随机点
+        cout << "正在生成 " << N << " 个随机点..." << endl;
+        vector<Point> points = generateRandomPoints(N);
+        
+        // 保存到文件
+        string filename = "points_" + to_string(N) + ".txt";
+        if (savePointsToFile(points, filename)) {
+            cout << "成功生成 " << N << " 个随机点并保存到文件 " << filename << endl;
+        }
+        
+        // 输出前10个点作为示例
+        cout << "\n生成的前10个点示例：" << endl;
+        int show_count = min(10, N);
+        for (int i = 0; i < show_count; i++) {
+            cout << "点 " << i + 1 << ": (" << points[i].x << ", " << points[i].y << ")" << endl;
+        }
+        
+        cout << "\n------------------------------\n" << endl;
     }
     
     return 0;

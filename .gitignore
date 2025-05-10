@@ -15,3 +15,13 @@ temp/*.exe
 temp/makephoto
 OI/lougu/.cph
 OI/Atcoder/.cph
+temp/*
+互联网编程/实验二/server_thread_pool.log
+互联网编程/实验二/server_multi_thread.log
+互联网编程/实验二/*.log
+互联网编程/实验二/*.txt
+互联网编程/实验二/.idea
+互联网编程/实验二/.idea/*
+互联网编程/实验二/out
+互联网编程/实验二/out/*
+互联网编程/实验二/*.iml

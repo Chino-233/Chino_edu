@@ -70,4 +70,54 @@
         "iostream": "cpp",
         "iomanip": "cpp"
     },
+      // 如果你喜欢使用内置 PDF 预览，保持默认；也可以设置为 false，使用外部阅读器
+  "latex-workshop.view.pdf.viewer": "tab",
+
+  // 定义编译命令（recipes）
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "pdflatex → bibtex → pdflatex×2",
+      "tools": ["pdflatex", "bibtex", "pdflatex", "pdflatex"]
+    },
+    {
+      "name": "xelatex",
+      "tools": ["xelatex"]
+    },
+    {
+      "name": "lualatex",
+      "tools": ["lualatex"]
+    }
+  ],
+
+  // 定义工具（tools）对应的可执行命令
+  "latex-workshop.latex.tools": [
+    {
+      "name": "pdflatex",
+      "command": "pdflatex",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "%DOC%"
+      ]
+    },
+    {
+      "name": "bibtex",
+      "command": "bibtex",
+      "args": ["%DOCFILE%"]
+    },
+    {
+      "name": "xelatex",
+      "command": "xelatex",
+      "args": ["-synctex=1", "-interaction=nonstopmode", "%DOC%"]
+    },
+    {
+      "name": "lualatex",
+      "command": "lualatex",
+      "args": ["-synctex=1", "-interaction=nonstopmode", "%DOC%"]
+    }
+  ],
+
+  // 保存时自动编译（可选）
+  "latex-workshop.latex.autoBuild.run": "onSave",
 }

@@ -66,9 +66,13 @@
         "互联网编程/编程练习一",
         "互联网编程/实验一"
     ],
+    "code-runner.executorMap": {
+        "matlab": "cd $dir && matlab -nosplash -nodesktop -batch \"run('$fileName');\""
+    },
     "files.associations": {
         "iostream": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "*.m": "matlab"
     },
       // 如果你喜欢使用内置 PDF 预览，保持默认；也可以设置为 false，使用外部阅读器
   "latex-workshop.view.pdf.viewer": "tab",

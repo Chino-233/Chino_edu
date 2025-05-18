@@ -28,3 +28,6 @@ temp/*
 resources/*
 .gitattributes
 Blank_project.prj
+suan_temp/*.txt
+suan_temp/*.exe
+suan_temp/*.col

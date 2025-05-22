@@ -30,4 +30,6 @@ resources/*
 Blank_project.prj
 suan_temp/*.txt
 suan_temp/*.exe
+suan_temp/tempCodeRunnerFile.cpp
 suan_temp/*.col
+suan_temp/random_graphs/*

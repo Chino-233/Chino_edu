@@ -19,35 +19,58 @@ int main(){
         num[i]=arr[i];
     }
     int edge[50][50];
-    for(int i=0;i<n;i++){
-        for(int j=i;j<n;j++){
+    for(int i=0;i<50;i++){
+        for(int j=0;j<50;j++){
             edge[i][j]=0;
             edge[j][i]=0;
         }
     }
     for(int i=0;i<n;i++){
-        for(int j=i;j<n;j++){
+        for(int j=i+1;j<n;j++){
             cin>>edge[i][j];
             edge[j][i]=edge[i][j];
         }
     }
     int t=20;
-    while (t--)
-    {
-       for(int i=0;i<n;i++){
-        for(int j=0;j<n;j++){
-            if(edge[i][j]==1){
-                num[i]=max(num[j]+arr[j],num[i]);
+    int maxnum=0;
+    int dp[50][50];
+    for(int i=0;i<50;i++){
+        for(int j=0;j<50;j++){
+            dp[i][j]=0;
+            if(j==1){
+                dp[i][j]=-1;
             }
         }
-       } 
     }
-    int maxnum=0;
     for(int i=0;i<n;i++){
-        if(num[i]>maxnum){
-            maxnum=num[i];
+        dp[i][0]=arr[i];
+        for(int j=0;j<i;j++){
+            if(edge[i][j]==1&&dp[i][0]<dp[j][0]+arr[i]){
+                dp[i][0]=dp[j][0]+arr[i];
+                dp[i][1]=j;
+            }
+        }
+
+    }
+    int maxpos=0;
+    for(int i=0;i<n;i++){
+        if(maxnum<dp[i][0]){
+            maxpos=i;
+            maxnum=dp[i][0];
         }
     }
-    cout<<maxnum<<endl;
+    int pos=maxpos;
+    int route[50]={0};
+    route[0]=maxpos;
+    int k=1;
+    while(dp[pos][1]!=-1){
+        pos=dp[pos][1];
+        route[k]=pos;
+        k++;
+    }
+    for(int i=k-1;i>=0;i--){
+       cout<<route[i]+1<<" "; 
+    }
+    cout<<endl<<maxnum;
     return 0;
 }

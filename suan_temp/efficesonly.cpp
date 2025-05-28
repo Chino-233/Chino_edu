@@ -1,3 +1,4 @@
+// 图着色算法 - 找到一个解即结束
 #include <bits/stdc++.h>
 using namespace std;
 const int MAX_VERTICES = 1000;
@@ -15,9 +16,8 @@ public:
     unordered_map<int, int> vertexDegree;
     unordered_map<int, int> saturationDegree;
     
-    // 存储所有找到的解决方案的数量(而不是解决方案本身)
-    // vector<unordered_map<int, int>> allSolutions; // 注释掉
-    int solutionCount = 0; // 新增：只记录解的数量
+    // 存储解决方案的数量
+    int solutionCount = 0;
     
     long long exploredCombinations = 0; // 已探索的组合数
     double totalCombinations = 0;       // 估算的总组合数
@@ -127,7 +127,100 @@ public:
         cout << "\r找到 " << solutionCount << " 个解，已用时: " << elapsedTime << "秒" << std::flush;
     }
     
-    // 修改后的回溯着色算法 - 只记录解的数量
+    // 新增的回溯着色算法 - 找到一个解立即返回
+    bool backtrackColoringFirstSolution(vector<int>& vertices, unordered_map<int, int>& colors, 
+                                int numColors, size_t index, vector<bitset<MAX_COLORS>>& available,
+                                vector<unordered_map<int, bool>>& savedAvailability) {
+        // 检查是否超时
+        auto currentTime = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
+        if (duration > 6000) { // 60秒超时
+            return false;
+        }
+        
+        // 所有顶点已着色，找到一个解
+        if (index == vertices.size()) {
+            solutionCount = 1; // 设置为1表示找到一个解
+            return true; // 找到解后返回true
+        }
+
+        // 更新探索进度
+        exploredCombinations++;
+        if (exploredCombinations % 10000 == 0) {
+            //displayProgress();
+        }
+
+        // 动态选择下一个顶点
+        int nextIdx = selectNextVertex(vector<int>(vertices.begin() + index, vertices.end()), 
+                                     available, colors);
+        if (nextIdx != 0) {
+            std::swap(vertices[index], vertices[index + nextIdx]);
+        }
+
+        int vertex = vertices[index];
+        
+        // 获取已使用的颜色集合，用于等效冗余优化
+        unordered_set<int> usedColors;
+        for (int i = 0; i < index; ++i) {
+            if (colors.count(vertices[i]) > 0) {
+                usedColors.insert(colors[vertices[i]]);
+            }
+        }
+
+        // 为当前顶点选择颜色
+        vector<int> colorOrder(numColors);
+        for (int i = 0; i < numColors; ++i) {
+            colorOrder[i] = i + 1;
+        }
+        
+        // 根据颜色使用频率排序
+        std::sort(colorOrder.begin(), colorOrder.end(), 
+                 [&](int a, int b) { return colorUsageCount[a-1] < colorUsageCount[b-1]; });
+
+        // 先尝试已使用的颜色
+        for (int color : colorOrder) {
+            // 排除等效冗余优化：如果此颜色未被使用过，只尝试一种新颜色
+            if (usedColors.count(color) == 0 && !usedColors.empty() && color != colorOrder[0]) {
+                continue;
+            }
+            
+            if (available[vertex][color-1] && isSafe(vertex, color, colors)) {
+                // 前向检查优化
+                if (!forwardCheck(vertex, color, available)) {
+                    continue;
+                }
+
+                // 分配颜色
+                colors[vertex] = color;
+                colorUsageCount[color-1]++;
+                
+                // 更新邻居可用颜色
+                updateNeighborsAvailability(vertex, color, available, savedAvailability);
+
+                // 递归处理下一个顶点
+                if (backtrackColoringFirstSolution(vertices, colors, numColors, index + 1, 
+                                           available, savedAvailability)) {
+                    return true; // 如果找到解，立即返回true
+                }
+
+                // 回溯
+                colors.erase(vertex);
+                colorUsageCount[color-1]--;
+                
+                // 恢复邻居可用颜色
+                restoreNeighborsAvailability(color, available, savedAvailability);
+            }
+        }
+
+        // 恢复顶点顺序
+        if (nextIdx != 0) {
+            std::swap(vertices[index], vertices[index + nextIdx]);
+        }
+        
+        return false; // 没找到解
+    }
+    
+    // 保留原来的查找所有解的回溯方法
     void backtrackColoringAllSolutions(vector<int>& vertices, unordered_map<int, int>& colors, 
                                   int numColors, size_t index, vector<bitset<MAX_COLORS>>& available,
                                   vector<unordered_map<int, bool>>& savedAvailability,
@@ -141,7 +234,6 @@ public:
         
         // 所有顶点已着色，找到一个解
         if (index == vertices.size()) {
-            // allSolutions.push_back(colors); // 注释掉，不再保存解
             solutionCount++; // 只增加计数
             //displayProgress();
             return;
@@ -219,7 +311,6 @@ public:
         }
     }
 
-
     GraphColoring() {}
     
     // 从文件加载图
@@ -276,11 +367,62 @@ public:
         maxColors = numColors;
     }
 
-    // 修改的图着色函数 - 只返回解的数量
+    // 新增的图着色函数 - 寻找第一个解
+    bool colorGraphFirstSolution(int numColors, unordered_map<int, int>& resultColoring) {
+        startTime = std::chrono::steady_clock::now();
+        solutionCount = 0;
+        exploredCombinations = 0;
+        estimateTotalCombinations(numColors);
+        
+        cout << "开始对 " << graph.size() << " 个顶点的图进行 " << numColors 
+             << " 种颜色的着色，寻找第一个解..." << endl;
+        
+        // 按度数降序排序顶点（初始排序）
+        vector<int> vertices;
+        for (const auto& [vertex, _] : graph) {
+            vertices.push_back(vertex);
+        }
+        
+        std::sort(vertices.begin(), vertices.end(), [&](int a, int b) {
+            return vertexDegree[a] > vertexDegree[b];
+        });
+        
+        // 初始化结果
+        unordered_map<int, int> colors;
+        
+        // 初始化颜色可用性位图
+        vector<bitset<MAX_COLORS>> available(MAX_VERTICES);
+        for (const auto& [vertex, _] : graph) {
+            available[vertex].set();  // 所有颜色初始都可用
+        }
+        
+        // 初始化颜色使用频率计数
+        colorUsageCount.resize(numColors, 0);
+        
+        // 用于保存回溯时需要恢复的状态
+        vector<unordered_map<int, bool>> savedAvailability(MAX_COLORS);
+        
+        // 使用回溯法寻找第一个解
+        bool foundSolution = backtrackColoringFirstSolution(vertices, colors, numColors, 0, 
+                                                   available, savedAvailability);
+        
+        auto endTime = std::chrono::steady_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
+        
+        if (foundSolution) {
+            resultColoring = colors;
+            cout << "\n找到一个解决方案，用时: " << duration << "ms" << endl;
+            return true;
+        } else {
+            cout << "\n没有找到解决方案，用时: " << duration << "ms" << endl;
+            return false;
+        }
+    }
+    
+    // 保留原来查找所有解的方法
     int colorGraphAllSolutions(int numColors, int solutionLimit = 0) {
         startTime = std::chrono::steady_clock::now();
-        // allSolutions.clear(); // 注释掉
-        solutionCount = 0; // 重置计数器
+        solutionCount = 0; 
         exploredCombinations = 0;
         estimateTotalCombinations(numColors);
         
@@ -321,7 +463,7 @@ public:
         
         cout << "\n找到 " << solutionCount << " 个解决方案，用时: " << duration << "ms" << endl;
         
-        return solutionCount; // 返回解的数量而不是解本身
+        return solutionCount;
     }
 
     // 验证着色结果
@@ -376,14 +518,10 @@ public:
     }
 };
 
-// 直接包含原来的GraphColoring类定义
-// ...此处应包含GraphColoring类的所有代码...
-// 为了简便，我假设你会复制原文件中的GraphColoring类实现
-
 using namespace std;
 namespace fs = std::filesystem;
 
-// 分析单个图文件的性能
+// 修改后的分析单个图文件的性能函数
 void analyzeGraphFile(const string& filename, ofstream& outFile) {
     cout << "分析文件: " << filename << endl;
     
@@ -392,7 +530,7 @@ void analyzeGraphFile(const string& filename, ofstream& outFile) {
     int vertices = 0;
     int density = 0;
     
-    // 从文件名解析信息 (假设文件名格式为 random_vertices_density.col)
+    // 从文件名解析信息
     sscanf(basename.c_str(), "planar_%d_%d.col", &vertices, &density);
     
     // 加载图并计时
@@ -404,28 +542,28 @@ void analyzeGraphFile(const string& filename, ofstream& outFile) {
     
     int edgeCount = coloring.countEdges();
     
-    // 设置解决方案数量限制
-    const int SOLUTION_LIMIT = 1000000000; // 最多找10000个解
-    
-    // 寻找所有解并计时
+    // 寻找第一个解并计时
+    unordered_map<int, int> resultColoring;
     auto startTime = std::chrono::steady_clock::now();
-    int solutionCount = coloring.colorGraphAllSolutions(5, SOLUTION_LIMIT);  // 四色填充，设置解的数量上限
+    bool foundSolution = coloring.colorGraphFirstSolution(20, resultColoring);  // 五色填充
     auto endTime = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
     
     // 写入结果到文件
-    if (solutionCount > 0) {
+    if (foundSolution) {
         outFile << vertices << "," << edgeCount << "," << density << "," 
-                << fixed << setprecision(3) << duration / 1000.0 << "," << solutionCount << endl;
+                << fixed << setprecision(3) << duration / 1000.0 << ",1" << endl;
         cout << "  顶点: " << vertices << ", 边: " << edgeCount 
              << ", 密度: " << density << "%"
              << ", 用时: " << duration << "ms"
-             << ", 找到: " << solutionCount << " 个解" << endl;
+             << ", 状态: 找到解" << endl;
     } else {
-        outFile << vertices << "," << edgeCount << "," << density << ",timeout,0" << endl;
+        outFile << vertices << "," << edgeCount << "," << density << ","
+                << fixed << setprecision(3) << duration / 1000.0 << ",0" << endl;
         cout << "  顶点: " << vertices << ", 边: " << edgeCount 
              << ", 密度: " << density << "%"
-             << ", 结果: 超时或无解" << endl;
+             << ", 用时: " << duration << "ms"
+             << ", 状态: 未找到解" << endl;
     }
 }
 
@@ -442,7 +580,7 @@ void analyzeAllGraphs() {
     }
     
     // 写入表头
-    outFile << "顶点数,边数,密度(%),执行时间(秒),解的数量" << endl;
+    outFile << "顶点数,边数,密度(%),执行时间(秒),是否找到解" << endl;
     
     // 遍历目录中的所有文件
     vector<string> files;
@@ -469,7 +607,7 @@ void analyzeAllGraphs() {
     cout << "分析完成，结果已保存到: " << outputFile << endl;
 }
 
-// 测试单个图文件并找到所有解
+// 测试单个图文件并找到第一个解
 void testSingleGraph(const string& filename) {
     cout << "测试文件: " << filename << endl;
     
@@ -480,32 +618,23 @@ void testSingleGraph(const string& filename) {
         return;
     }
     
-    // 设置解决方案数量限制（0表示不限制）
-    const int SOLUTION_LIMIT = 0;
+    // 寻找第一个解
+    unordered_map<int, int> resultColoring;
+    bool foundSolution = coloring.colorGraphFirstSolution(20, resultColoring);  // 五色填充
     
-    // 寻找所有解
-    int solutionCount = coloring.colorGraphAllSolutions(5, SOLUTION_LIMIT);  // 四色填充
-    
-    cout << "找到 " << solutionCount << " 个有效解" << endl;
-    
-    // 由于不再存储解，以下部分需要注释掉或修改
-    /*
-    // 验证所有解
-    int validCount = 0;
-    for (const auto& solution : solutions) {
-        if (coloring.verifyColoring(solution)) {
-            validCount++;
+    if (foundSolution) {
+        cout << "成功找到一个解决方案" << endl;
+        
+        // 验证解决方案
+        if (coloring.verifyColoring(resultColoring)) {
+            cout << "解决方案验证有效" << endl;
+            coloring.analyzeColoring(resultColoring);
+        } else {
+            cout << "解决方案验证无效!" << endl;
         }
+    } else {
+        cout << "未找到解决方案" << endl;
     }
-    
-    cout << "验证结果: " << validCount << "/" << solutions.size() << " 个有效解" << endl;
-    
-    // 分析第一个解（如果有）
-    if (!solutions.empty()) {
-        cout << "\n第一个解的分析:" << endl;
-        coloring.analyzeColoring(solutions[0]);
-    }
-    */
 }
 
 int main() {

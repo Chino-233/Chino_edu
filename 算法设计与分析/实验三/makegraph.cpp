@@ -1,15 +1,4 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <random>
-#include <algorithm>
-#include <string>
-#include <set>
-#include <map>
-#include <ctime>
-#include <queue>
-#include <cmath>
-
+#include <bits/stdc++.h>
 using namespace std;
 
 // 二维点结构
@@ -519,17 +508,7 @@ void generatePlanarGraphTestCases() {
     
     // 定义不同的顶点数和对应的边数
     vector<pair<int, int>> cases = {
-    //    {20, 50},     // 3*20-6=54  → 50 ≤54
-    //{40, 100},    // 3*40-6=114 →100 ≤114
-    //{60, 150},    // 3*60-6=174 →150 ≤174
-    //{80, 200},    // 3*80-6=234 →200 ≤234
-    //{100, 250},   // 3*100-6=294→250 ≤294
-    //{120, 300},   // 3*120-6=354→300 ≤354
-    //{140, 350},   // 3*140-6=414→350 ≤414
-    //{160, 400},   // 3*160-6=474→400 ≤474
-    //{180, 450},   // 3*180-6=534→450 ≤534
-    //{200, 500},   // 3*200-6=594→500 ≤594
-    {900,2250}
+        {20,50},
     };
     
     cout << "开始生成平面图...\n" << endl;

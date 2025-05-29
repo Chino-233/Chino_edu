@@ -4,26 +4,26 @@ const int MAX_VERTICES = 1000;
 const int MAX_COLORS = 30;
 class GraphColoring {
 public:
-    // Ê¹ÓÃÁÚ½Ó±í±íÊ¾Í¼
+    // ä½¿ç”¨é‚»æ¥è¡¨è¡¨ç¤ºå›¾
     unordered_map<int, vector<int>> graph;
     std::chrono::steady_clock::time_point startTime;
     
-    // ÓÃÓÚ¼ôÖ¦Ê±¼ÆËãµÄÑÕÉ«Ê¹ÓÃÆµÂÊ
+    // ç”¨äºå‰ªææ—¶è®¡ç®—çš„é¢œè‰²ä½¿ç”¨é¢‘ç‡
     vector<int> colorUsageCount;
     
-    // ´æ´¢Ã¿¸ö¶¥µãµÄ¶ÈÊıºÍ±¥ºÍ¶È
+    // å­˜å‚¨æ¯ä¸ªé¡¶ç‚¹çš„åº¦æ•°å’Œé¥±å’Œåº¦
     unordered_map<int, int> vertexDegree;
     unordered_map<int, int> saturationDegree;
     
-    // ´æ´¢ËùÓĞÕÒµ½µÄ½â¾ö·½°¸µÄÊıÁ¿(¶ø²»ÊÇ½â¾ö·½°¸±¾Éí)
-    // vector<unordered_map<int, int>> allSolutions; // ×¢ÊÍµô
-    int solutionCount = 0; // ĞÂÔö£ºÖ»¼ÇÂ¼½âµÄÊıÁ¿
+    // å­˜å‚¨æ‰€æœ‰æ‰¾åˆ°çš„è§£å†³æ–¹æ¡ˆçš„æ•°é‡(è€Œä¸æ˜¯è§£å†³æ–¹æ¡ˆæœ¬èº«)
+    // vector<unordered_map<int, int>> allSolutions; // æ³¨é‡Šæ‰
+    int solutionCount = 0; // æ–°å¢ï¼šåªè®°å½•è§£çš„æ•°é‡
     
-    long long exploredCombinations = 0; // ÒÑÌ½Ë÷µÄ×éºÏÊı
-    double totalCombinations = 0;       // ¹ÀËãµÄ×Ü×éºÏÊı
-    int maxColors = 0;                  // ×î´óÑÕÉ«ÊıÁ¿
+    long long exploredCombinations = 0; // å·²æ¢ç´¢çš„ç»„åˆæ•°
+    double totalCombinations = 0;       // ä¼°ç®—çš„æ€»ç»„åˆæ•°
+    int maxColors = 0;                  // æœ€å¤§é¢œè‰²æ•°é‡
 
-    // ¼ì²éÑÕÉ«ÊÇ·ñ¿ÉÓÃÓÚ¶¥µã
+    // æ£€æŸ¥é¢œè‰²æ˜¯å¦å¯ç”¨äºé¡¶ç‚¹
     bool isSafe(int vertex, int color, const unordered_map<int, int>& colors) {
         for (int neighbor : graph[vertex]) {
             if (colors.count(neighbor) > 0 && colors.at(neighbor) == color) {
@@ -33,7 +33,7 @@ public:
         return true;
     }
 
-    // Ç°Ïò¼ì²é£º¼ì²é·ÖÅä´ËÑÕÉ«ºóÁÚ¾ÓÊÇ·ñ»¹ÓĞ¿ÉÓÃÑÕÉ«
+    // å‰å‘æ£€æŸ¥ï¼šæ£€æŸ¥åˆ†é…æ­¤é¢œè‰²åé‚»å±…æ˜¯å¦è¿˜æœ‰å¯ç”¨é¢œè‰²
     bool forwardCheck(int vertex, int color, vector<bitset<MAX_COLORS>>& available) {
         for (int neighbor : graph[vertex]) {
             if (available[neighbor].count() == 1 && available[neighbor][color-1]) {
@@ -43,7 +43,7 @@ public:
         return true;
     }
 
-    // ¸üĞÂÁÚ¾ÓµÄ¿ÉÓÃÑÕÉ«
+    // æ›´æ–°é‚»å±…çš„å¯ç”¨é¢œè‰²
     void updateNeighborsAvailability(int vertex, int color, vector<bitset<MAX_COLORS>>& available, 
                                     vector<unordered_map<int, bool>>& savedAvailability) {
         for (int neighbor : graph[vertex]) {
@@ -54,7 +54,7 @@ public:
         }
     }
 
-    // »Ö¸´ÁÚ¾ÓµÄ¿ÉÓÃÑÕÉ«
+    // æ¢å¤é‚»å±…çš„å¯ç”¨é¢œè‰²
     void restoreNeighborsAvailability(int color, vector<bitset<MAX_COLORS>>& available, 
                                       vector<unordered_map<int, bool>>& savedAvailability) {
         for (auto& [neighbor, wasAvailable] : savedAvailability[color-1]) {
@@ -65,12 +65,12 @@ public:
         savedAvailability[color-1].clear();
     }
 
-    // »ñÈ¡¶¥µãµÄ¶ÈÊı
+    // è·å–é¡¶ç‚¹çš„åº¦æ•°
     int getDegree(int vertex) {
         return graph[vertex].size();
     }
     
-    // ¼ÆËã¶¥µãµÄ±¥ºÍ¶È£¨ÁÚ¾ÓÖĞ²»Í¬ÑÕÉ«µÄÊıÁ¿£©
+    // è®¡ç®—é¡¶ç‚¹çš„é¥±å’Œåº¦ï¼ˆé‚»å±…ä¸­ä¸åŒé¢œè‰²çš„æ•°é‡ï¼‰
     int calculateSaturation(int vertex, const unordered_map<int, int>& colors) {
         unordered_set<int> neighborColors;
         for (int neighbor : graph[vertex]) {
@@ -81,7 +81,7 @@ public:
         return neighborColors.size();
     }
 
-    // ½áºÏ¶ÈÊıºÍ±¥ºÍ¶È£¬°´ÓÅÏÈ¼¶Ñ¡ÔñÏÂÒ»¸ö¶¥µã
+    // ç»“åˆåº¦æ•°å’Œé¥±å’Œåº¦ï¼ŒæŒ‰ä¼˜å…ˆçº§é€‰æ‹©ä¸‹ä¸€ä¸ªé¡¶ç‚¹
     int selectNextVertex(const vector<int>& uncolored, 
                         vector<bitset<MAX_COLORS>>& available, 
                         const unordered_map<int, int>& colors) {
@@ -96,20 +96,20 @@ public:
             int degree = getDegree(vertex);
             int availableCount = available[vertex].count();
             
-            // ÓÅÏÈÑ¡Ôñ±¥ºÍ¶È¸ßµÄ¶¥µã
+            // ä¼˜å…ˆé€‰æ‹©é¥±å’Œåº¦é«˜çš„é¡¶ç‚¹
             if (saturation > maxSaturation) {
                 maxSaturation = saturation;
                 maxDegree = degree;
                 minAvailable = availableCount;
                 bestIdx = i;
             } 
-            // ±¥ºÍ¶ÈÏàÍ¬£¬Ñ¡Ôñ¿ÉÓÃÑÕÉ«Êı×îÉÙµÄ¶¥µã
+            // é¥±å’Œåº¦ç›¸åŒï¼Œé€‰æ‹©å¯ç”¨é¢œè‰²æ•°æœ€å°‘çš„é¡¶ç‚¹
             else if (saturation == maxSaturation && availableCount < minAvailable) {
                 minAvailable = availableCount;
                 maxDegree = degree;
                 bestIdx = i;
             }
-            // ±¥ºÍ¶ÈºÍ¿ÉÓÃÑÕÉ«ÊıÏàÍ¬£¬Ñ¡Ôñ¶ÈÊı×î´óµÄ¶¥µã
+            // é¥±å’Œåº¦å’Œå¯ç”¨é¢œè‰²æ•°ç›¸åŒï¼Œé€‰æ‹©åº¦æ•°æœ€å¤§çš„é¡¶ç‚¹
             else if (saturation == maxSaturation && availableCount == minAvailable && degree > maxDegree) {
                 maxDegree = degree;
                 bestIdx = i;
@@ -119,41 +119,41 @@ public:
         return bestIdx;
     }
 
-    // ÏÔÊ¾½ø¶È
+    // æ˜¾ç¤ºè¿›åº¦
     void displayProgress() {
         auto currentTime = std::chrono::steady_clock::now();
         auto elapsedTime = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
         
-        cout << "\rÕÒµ½ " << solutionCount << " ¸ö½â£¬ÒÑÓÃÊ±: " << elapsedTime << "Ãë" << std::flush;
+        cout << "\ræ‰¾åˆ° " << solutionCount << " ä¸ªè§£ï¼Œå·²ç”¨æ—¶: " << elapsedTime << "ç§’" << std::flush;
     }
     
-    // ĞŞ¸ÄºóµÄ»ØËİ×ÅÉ«Ëã·¨ - Ö»¼ÇÂ¼½âµÄÊıÁ¿
+    // ä¿®æ”¹åçš„å›æº¯ç€è‰²ç®—æ³• - åªè®°å½•è§£çš„æ•°é‡
     void backtrackColoringAllSolutions(vector<int>& vertices, unordered_map<int, int>& colors, 
                                   int numColors, size_t index, vector<bitset<MAX_COLORS>>& available,
                                   vector<unordered_map<int, bool>>& savedAvailability,
                                   int& solutionLimit) {
-        // ¼ì²éÊÇ·ñ³¬Ê±»ò´ïµ½½âµÄÊıÁ¿ÏŞÖÆ
+        // æ£€æŸ¥æ˜¯å¦è¶…æ—¶æˆ–è¾¾åˆ°è§£çš„æ•°é‡é™åˆ¶
         auto currentTime = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::seconds>(currentTime - startTime).count();
-        if (duration > 6000 || (solutionLimit > 0 && solutionCount >= solutionLimit)) { // 60Ãë³¬Ê±
+        if (duration > 6000 || (solutionLimit > 0 && solutionCount >= solutionLimit)) { // 60ç§’è¶…æ—¶
             return;
         }
         
-        // ËùÓĞ¶¥µãÒÑ×ÅÉ«£¬ÕÒµ½Ò»¸ö½â
+        // æ‰€æœ‰é¡¶ç‚¹å·²ç€è‰²ï¼Œæ‰¾åˆ°ä¸€ä¸ªè§£
         if (index == vertices.size()) {
-            // allSolutions.push_back(colors); // ×¢ÊÍµô£¬²»ÔÙ±£´æ½â
-            solutionCount++; // Ö»Ôö¼Ó¼ÆÊı
+            // allSolutions.push_back(colors); // æ³¨é‡Šæ‰ï¼Œä¸å†ä¿å­˜è§£
+            solutionCount++; // åªå¢åŠ è®¡æ•°
             //displayProgress();
             return;
         }
 
-        // ¸üĞÂÌ½Ë÷½ø¶È
+        // æ›´æ–°æ¢ç´¢è¿›åº¦
         exploredCombinations++;
         if (exploredCombinations % 10000 == 0) {
             //displayProgress();
         }
 
-        // ¶¯Ì¬Ñ¡ÔñÏÂÒ»¸ö¶¥µã
+        // åŠ¨æ€é€‰æ‹©ä¸‹ä¸€ä¸ªé¡¶ç‚¹
         int nextIdx = selectNextVertex(vector<int>(vertices.begin() + index, vertices.end()), 
                                      available, colors);
         if (nextIdx != 0) {
@@ -162,7 +162,7 @@ public:
 
         int vertex = vertices[index];
         
-        // »ñÈ¡ÒÑÊ¹ÓÃµÄÑÕÉ«¼¯ºÏ£¬ÓÃÓÚµÈĞ§ÈßÓàÓÅ»¯
+        // è·å–å·²ä½¿ç”¨çš„é¢œè‰²é›†åˆï¼Œç”¨äºç­‰æ•ˆå†—ä½™ä¼˜åŒ–
         unordered_set<int> usedColors;
         for (int i = 0; i < index; ++i) {
             if (colors.count(vertices[i]) > 0) {
@@ -170,50 +170,50 @@ public:
             }
         }
 
-        // Îªµ±Ç°¶¥µãÑ¡ÔñÑÕÉ«
+        // ä¸ºå½“å‰é¡¶ç‚¹é€‰æ‹©é¢œè‰²
         vector<int> colorOrder(numColors);
         for (int i = 0; i < numColors; ++i) {
             colorOrder[i] = i + 1;
         }
         
-        // ¸ù¾İÑÕÉ«Ê¹ÓÃÆµÂÊÅÅĞò
+        // æ ¹æ®é¢œè‰²ä½¿ç”¨é¢‘ç‡æ’åº
         std::sort(colorOrder.begin(), colorOrder.end(), 
                  [&](int a, int b) { return colorUsageCount[a-1] < colorUsageCount[b-1]; });
 
-        // ÏÈ³¢ÊÔÒÑÊ¹ÓÃµÄÑÕÉ«
+        // å…ˆå°è¯•å·²ä½¿ç”¨çš„é¢œè‰²
         for (int color : colorOrder) {
-            // ÅÅ³ıµÈĞ§ÈßÓàÓÅ»¯£ºÈç¹û´ËÑÕÉ«Î´±»Ê¹ÓÃ¹ı£¬Ö»³¢ÊÔÒ»ÖÖĞÂÑÕÉ«
+            // æ’é™¤ç­‰æ•ˆå†—ä½™ä¼˜åŒ–ï¼šå¦‚æœæ­¤é¢œè‰²æœªè¢«ä½¿ç”¨è¿‡ï¼Œåªå°è¯•ä¸€ç§æ–°é¢œè‰²
             if (usedColors.count(color) == 0 && !usedColors.empty() && color != colorOrder[0]) {
                 continue;
             }
             
             if (available[vertex][color-1] && isSafe(vertex, color, colors)) {
-                // Ç°Ïò¼ì²éÓÅ»¯
+                // å‰å‘æ£€æŸ¥ä¼˜åŒ–
                 if (!forwardCheck(vertex, color, available)) {
                     continue;
                 }
 
-                // ·ÖÅäÑÕÉ«
+                // åˆ†é…é¢œè‰²
                 colors[vertex] = color;
                 colorUsageCount[color-1]++;
                 
-                // ¸üĞÂÁÚ¾Ó¿ÉÓÃÑÕÉ«
+                // æ›´æ–°é‚»å±…å¯ç”¨é¢œè‰²
                 updateNeighborsAvailability(vertex, color, available, savedAvailability);
 
-                // µİ¹é´¦ÀíÏÂÒ»¸ö¶¥µã
+                // é€’å½’å¤„ç†ä¸‹ä¸€ä¸ªé¡¶ç‚¹
                 backtrackColoringAllSolutions(vertices, colors, numColors, index + 1, 
                                            available, savedAvailability, solutionLimit);
 
-                // »ØËİ
+                // å›æº¯
                 colors.erase(vertex);
                 colorUsageCount[color-1]--;
                 
-                // »Ö¸´ÁÚ¾Ó¿ÉÓÃÑÕÉ«
+                // æ¢å¤é‚»å±…å¯ç”¨é¢œè‰²
                 restoreNeighborsAvailability(color, available, savedAvailability);
             }
         }
 
-        // »Ö¸´¶¥µãË³Ğò
+        // æ¢å¤é¡¶ç‚¹é¡ºåº
         if (nextIdx != 0) {
             std::swap(vertices[index], vertices[index + nextIdx]);
         }
@@ -222,21 +222,21 @@ public:
 
     GraphColoring() {}
     
-    // ´ÓÎÄ¼ş¼ÓÔØÍ¼
+    // ä»æ–‡ä»¶åŠ è½½å›¾
     bool loadGraphFromFile(const string& filename) {
         std::ifstream file(filename);
         if (!file) {
-            cerr << "ÎŞ·¨´ò¿ªÎÄ¼ş: " << filename << endl;
+            cerr << "æ— æ³•æ‰“å¼€æ–‡ä»¶: " << filename << endl;
             return false;
         }
 
         string line;
         while (std::getline(file, line)) {
             if (line.empty() || line[0] == 'c') {
-                continue;  // Ìø¹ı×¢ÊÍĞĞ
+                continue;  // è·³è¿‡æ³¨é‡Šè¡Œ
             }
             if (line[0] == 'p') {
-                continue;  // Ìø¹ıÎÊÌâÃèÊöĞĞ
+                continue;  // è·³è¿‡é—®é¢˜æè¿°è¡Œ
             }
             if (line[0] == 'e') {
                 std::istringstream iss(line);
@@ -250,44 +250,44 @@ public:
             }
         }
 
-        // Ô¤¼ÆËãÃ¿¸ö¶¥µãµÄ¶ÈÊı
+        // é¢„è®¡ç®—æ¯ä¸ªé¡¶ç‚¹çš„åº¦æ•°
         for (const auto& [vertex, neighbors] : graph) {
             vertexDegree[vertex] = neighbors.size();
         }
 
-        cout << "Í¼ÒÑ¼ÓÔØ: " << graph.size() << " ¸ö¶¥µã, " 
-             << countEdges() << " Ìõ±ß" << endl;
+        cout << "å›¾å·²åŠ è½½: " << graph.size() << " ä¸ªé¡¶ç‚¹, " 
+             << countEdges() << " æ¡è¾¹" << endl;
         return true;
     }
 
-    // ¼ÆËãÍ¼ÖĞµÄ±ßÊı
+    // è®¡ç®—å›¾ä¸­çš„è¾¹æ•°
     int countEdges() const {
         int count = 0;
         for (const auto& [_, neighbors] : graph) {
             count += neighbors.size();
         }
-        return count / 2;  // Ã¿Ìõ±ß¼ÆËãÁËÁ½´Î
+        return count / 2;  // æ¯æ¡è¾¹è®¡ç®—äº†ä¸¤æ¬¡
     }
 
-    // ¹ÀËãËÑË÷¿Õ¼ä´óĞ¡
+    // ä¼°ç®—æœç´¢ç©ºé—´å¤§å°
     void estimateTotalCombinations(int numColors) {
-        // ¼òµ¥¹ÀËã: numColors^(¶¥µãÊı)£¬Êµ¼ÊËÑË÷¿Õ¼ä¿ÉÄÜĞ¡ºÜ¶à
+        // ç®€å•ä¼°ç®—: numColors^(é¡¶ç‚¹æ•°)ï¼Œå®é™…æœç´¢ç©ºé—´å¯èƒ½å°å¾ˆå¤š
         totalCombinations = pow(numColors, min(20, static_cast<int>(graph.size())));
         maxColors = numColors;
     }
 
-    // ĞŞ¸ÄµÄÍ¼×ÅÉ«º¯Êı - Ö»·µ»Ø½âµÄÊıÁ¿
+    // ä¿®æ”¹çš„å›¾ç€è‰²å‡½æ•° - åªè¿”å›è§£çš„æ•°é‡
     int colorGraphAllSolutions(int numColors, int solutionLimit = 0) {
         startTime = std::chrono::steady_clock::now();
-        // allSolutions.clear(); // ×¢ÊÍµô
-        solutionCount = 0; // ÖØÖÃ¼ÆÊıÆ÷
+        // allSolutions.clear(); // æ³¨é‡Šæ‰
+        solutionCount = 0; // é‡ç½®è®¡æ•°å™¨
         exploredCombinations = 0;
         estimateTotalCombinations(numColors);
         
-        cout << "¿ªÊ¼¶Ô " << graph.size() << " ¸ö¶¥µãµÄÍ¼½øĞĞ " << numColors 
-             << " ÖÖÑÕÉ«µÄ×ÅÉ«£¬Ñ°ÕÒËùÓĞ½â..." << endl;
+        cout << "å¼€å§‹å¯¹ " << graph.size() << " ä¸ªé¡¶ç‚¹çš„å›¾è¿›è¡Œ " << numColors 
+             << " ç§é¢œè‰²çš„ç€è‰²ï¼Œå¯»æ‰¾æ‰€æœ‰è§£..." << endl;
         
-        // °´¶ÈÊı½µĞòÅÅĞò¶¥µã£¨³õÊ¼ÅÅĞò£©
+        // æŒ‰åº¦æ•°é™åºæ’åºé¡¶ç‚¹ï¼ˆåˆå§‹æ’åºï¼‰
         vector<int> vertices;
         for (const auto& [vertex, _] : graph) {
             vertices.push_back(vertex);
@@ -297,34 +297,34 @@ public:
             return vertexDegree[a] > vertexDegree[b];
         });
         
-        // ³õÊ¼»¯½á¹û
+        // åˆå§‹åŒ–ç»“æœ
         unordered_map<int, int> colors;
         
-        // ³õÊ¼»¯ÑÕÉ«¿ÉÓÃĞÔÎ»Í¼
+        // åˆå§‹åŒ–é¢œè‰²å¯ç”¨æ€§ä½å›¾
         vector<bitset<MAX_COLORS>> available(MAX_VERTICES);
         for (const auto& [vertex, _] : graph) {
-            available[vertex].set();  // ËùÓĞÑÕÉ«³õÊ¼¶¼¿ÉÓÃ
+            available[vertex].set();  // æ‰€æœ‰é¢œè‰²åˆå§‹éƒ½å¯ç”¨
         }
         
-        // ³õÊ¼»¯ÑÕÉ«Ê¹ÓÃÆµÂÊ¼ÆÊı
+        // åˆå§‹åŒ–é¢œè‰²ä½¿ç”¨é¢‘ç‡è®¡æ•°
         colorUsageCount.resize(numColors, 0);
         
-        // ÓÃÓÚ±£´æ»ØËİÊ±ĞèÒª»Ö¸´µÄ×´Ì¬
+        // ç”¨äºä¿å­˜å›æº¯æ—¶éœ€è¦æ¢å¤çš„çŠ¶æ€
         vector<unordered_map<int, bool>> savedAvailability(MAX_COLORS);
         
-        // Ê¹ÓÃ»ØËİ·¨Ñ°ÕÒËùÓĞ½â
+        // ä½¿ç”¨å›æº¯æ³•å¯»æ‰¾æ‰€æœ‰è§£
         backtrackColoringAllSolutions(vertices, colors, numColors, 0, 
                                     available, savedAvailability, solutionLimit);
         
         auto endTime = std::chrono::steady_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
         
-        cout << "\nÕÒµ½ " << solutionCount << " ¸ö½â¾ö·½°¸£¬ÓÃÊ±: " << duration << "ms" << endl;
+        cout << "\næ‰¾åˆ° " << solutionCount << " ä¸ªè§£å†³æ–¹æ¡ˆï¼Œç”¨æ—¶: " << duration << "ms" << endl;
         
-        return solutionCount; // ·µ»Ø½âµÄÊıÁ¿¶ø²»ÊÇ½â±¾Éí
+        return solutionCount; // è¿”å›è§£çš„æ•°é‡è€Œä¸æ˜¯è§£æœ¬èº«
     }
 
-    // ÑéÖ¤×ÅÉ«½á¹û
+    // éªŒè¯ç€è‰²ç»“æœ
     bool verifyColoring(const unordered_map<int, int>& coloring) {
         if (coloring.empty()) {
             return false;
@@ -332,14 +332,14 @@ public:
 
         for (const auto& [vertex, _] : graph) {
             if (coloring.count(vertex) == 0) {
-                cerr << "´íÎó£º¶¥µã " << vertex << " Î´×ÅÉ«!" << endl;
+                cerr << "é”™è¯¯ï¼šé¡¶ç‚¹ " << vertex << " æœªç€è‰²!" << endl;
                 return false;
             }
             
             for (int neighbor : graph[vertex]) {
                 if (coloring.count(neighbor) > 0 && coloring.at(vertex) == coloring.at(neighbor)) {
-                    cerr << "´íÎó£º¶¥µã " << vertex << " ºÍ " << neighbor 
-                         << " ÑÕÉ«ÏàÍ¬ (" << coloring.at(vertex) << ")!" << endl;
+                    cerr << "é”™è¯¯ï¼šé¡¶ç‚¹ " << vertex << " å’Œ " << neighbor 
+                         << " é¢œè‰²ç›¸åŒ (" << coloring.at(vertex) << ")!" << endl;
                     return false;
                 }
             }
@@ -347,104 +347,104 @@ public:
         return true;
     }
 
-    // ·ÖÎö×ÅÉ«½á¹û
+    // åˆ†æç€è‰²ç»“æœ
     void analyzeColoring(const unordered_map<int, int>& coloring) {
         if (coloring.empty()) {
             return;
         }
 
-        // ¼ÆËãÊ¹ÓÃµÄÑÕÉ«ÊıÁ¿
+        // è®¡ç®—ä½¿ç”¨çš„é¢œè‰²æ•°é‡
         unordered_set<int> usedColors;
         for (const auto& [_, color] : coloring) {
             usedColors.insert(color);
         }
 
-        cout << "Ê¹ÓÃÁË " << usedColors.size() << " ÖÖ²»Í¬µÄÑÕÉ«" << endl;
+        cout << "ä½¿ç”¨äº† " << usedColors.size() << " ç§ä¸åŒçš„é¢œè‰²" << endl;
 
-        // Í³¼ÆÃ¿ÖÖÑÕÉ«µÄÊ¹ÓÃÆµÂÊ
+        // ç»Ÿè®¡æ¯ç§é¢œè‰²çš„ä½¿ç”¨é¢‘ç‡
         unordered_map<int, int> colorCounts;
         for (const auto& [_, color] : coloring) {
             colorCounts[color]++;
         }
 
-        cout << "ÑÕÉ«·Ö²¼:" << endl;
+        cout << "é¢œè‰²åˆ†å¸ƒ:" << endl;
         vector<pair<int, int>> sortedCounts(colorCounts.begin(), colorCounts.end());
         std::sort(sortedCounts.begin(), sortedCounts.end());
         for (const auto& [color, count] : sortedCounts) {
-            cout << "  ÑÕÉ« " << color << ": " << count << " ¸ö¶¥µã" << endl;
+            cout << "  é¢œè‰² " << color << ": " << count << " ä¸ªé¡¶ç‚¹" << endl;
         }
     }
 };
 
-// Ö±½Ó°üº¬Ô­À´µÄGraphColoringÀà¶¨Òå
-// ...´Ë´¦Ó¦°üº¬GraphColoringÀàµÄËùÓĞ´úÂë...
-// ÎªÁË¼ò±ã£¬ÎÒ¼ÙÉèÄã»á¸´ÖÆÔ­ÎÄ¼şÖĞµÄGraphColoringÀàÊµÏÖ
+// ç›´æ¥åŒ…å«åŸæ¥çš„GraphColoringç±»å®šä¹‰
+// ...æ­¤å¤„åº”åŒ…å«GraphColoringç±»çš„æ‰€æœ‰ä»£ç ...
+// ä¸ºäº†ç®€ä¾¿ï¼Œæˆ‘å‡è®¾ä½ ä¼šå¤åˆ¶åŸæ–‡ä»¶ä¸­çš„GraphColoringç±»å®ç°
 
 using namespace std;
 namespace fs = std::filesystem;
 
-// ·ÖÎöµ¥¸öÍ¼ÎÄ¼şµÄĞÔÄÜ
+// åˆ†æå•ä¸ªå›¾æ–‡ä»¶çš„æ€§èƒ½
 void analyzeGraphFile(const string& filename, ofstream& outFile) {
-    cout << "·ÖÎöÎÄ¼ş: " << filename << endl;
+    cout << "åˆ†ææ–‡ä»¶: " << filename << endl;
     
-    // ÌáÈ¡¶¥µãÊıĞÅÏ¢(´ÓÎÄ¼şÃû)
+    // æå–é¡¶ç‚¹æ•°ä¿¡æ¯(ä»æ–‡ä»¶å)
     string basename = fs::path(filename).filename().string();
     int vertices = 0;
     int density = 0;
     
-    // ´ÓÎÄ¼şÃû½âÎöĞÅÏ¢ (¼ÙÉèÎÄ¼şÃû¸ñÊ½Îª random_vertices_density.col)
+    // ä»æ–‡ä»¶åè§£æä¿¡æ¯ (å‡è®¾æ–‡ä»¶åæ ¼å¼ä¸º random_vertices_density.col)
     sscanf(basename.c_str(), "planar_%d_%d.col", &vertices, &density);
     
-    // ¼ÓÔØÍ¼²¢¼ÆÊ±
+    // åŠ è½½å›¾å¹¶è®¡æ—¶
     GraphColoring coloring;
     if (!coloring.loadGraphFromFile(filename)) {
-        cerr << "ÎŞ·¨¼ÓÔØÍ¼ÎÄ¼ş: " << filename << endl;
+        cerr << "æ— æ³•åŠ è½½å›¾æ–‡ä»¶: " << filename << endl;
         return;
     }
     
     int edgeCount = coloring.countEdges();
     
-    // ÉèÖÃ½â¾ö·½°¸ÊıÁ¿ÏŞÖÆ
-    const int SOLUTION_LIMIT = 1000000000; // ×î¶àÕÒ10000¸ö½â
+    // è®¾ç½®è§£å†³æ–¹æ¡ˆæ•°é‡é™åˆ¶
+    const int SOLUTION_LIMIT = 1000000000; // æœ€å¤šæ‰¾10000ä¸ªè§£
     
-    // Ñ°ÕÒËùÓĞ½â²¢¼ÆÊ±
+    // å¯»æ‰¾æ‰€æœ‰è§£å¹¶è®¡æ—¶
     auto startTime = std::chrono::steady_clock::now();
-    int solutionCount = coloring.colorGraphAllSolutions(5, SOLUTION_LIMIT);  // ËÄÉ«Ìî³ä£¬ÉèÖÃ½âµÄÊıÁ¿ÉÏÏŞ
+    int solutionCount = coloring.colorGraphAllSolutions(5, SOLUTION_LIMIT);  // å››è‰²å¡«å……ï¼Œè®¾ç½®è§£çš„æ•°é‡ä¸Šé™
     auto endTime = std::chrono::steady_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(endTime - startTime).count();
     
-    // Ğ´Èë½á¹ûµ½ÎÄ¼ş
+    // å†™å…¥ç»“æœåˆ°æ–‡ä»¶
     if (solutionCount > 0) {
         outFile << vertices << "," << edgeCount << "," << density << "," 
                 << fixed << setprecision(3) << duration / 1000.0 << "," << solutionCount << endl;
-        cout << "  ¶¥µã: " << vertices << ", ±ß: " << edgeCount 
-             << ", ÃÜ¶È: " << density << "%"
-             << ", ÓÃÊ±: " << duration << "ms"
-             << ", ÕÒµ½: " << solutionCount << " ¸ö½â" << endl;
+        cout << "  é¡¶ç‚¹: " << vertices << ", è¾¹: " << edgeCount 
+             << ", å¯†åº¦: " << density << "%"
+             << ", ç”¨æ—¶: " << duration << "ms"
+             << ", æ‰¾åˆ°: " << solutionCount << " ä¸ªè§£" << endl;
     } else {
         outFile << vertices << "," << edgeCount << "," << density << ",timeout,0" << endl;
-        cout << "  ¶¥µã: " << vertices << ", ±ß: " << edgeCount 
-             << ", ÃÜ¶È: " << density << "%"
-             << ", ½á¹û: ³¬Ê±»òÎŞ½â" << endl;
+        cout << "  é¡¶ç‚¹: " << vertices << ", è¾¹: " << edgeCount 
+             << ", å¯†åº¦: " << density << "%"
+             << ", ç»“æœ: è¶…æ—¶æˆ–æ— è§£" << endl;
     }
 }
 
-// ·ÖÎöËùÓĞËæ»úÍ¼²¢Éú³ÉĞ§ÂÊ±¨¸æ
+// åˆ†ææ‰€æœ‰éšæœºå›¾å¹¶ç”Ÿæˆæ•ˆç‡æŠ¥å‘Š
 void analyzeAllGraphs() {
     string inputDir = "d:\\Chino_edu\\suan_temp\\random_graphs\\";
     string outputFile = "d:\\Chino_edu\\suan_temp\\efficiency_results.txt";
     
-    // ´ò¿ªÊä³öÎÄ¼ş
+    // æ‰“å¼€è¾“å‡ºæ–‡ä»¶
     ofstream outFile(outputFile);
     if (!outFile) {
-        cerr << "ÎŞ·¨´´½¨Êä³öÎÄ¼ş: " << outputFile << endl;
+        cerr << "æ— æ³•åˆ›å»ºè¾“å‡ºæ–‡ä»¶: " << outputFile << endl;
         return;
     }
     
-    // Ğ´Èë±íÍ·
-    outFile << "¶¥µãÊı,±ßÊı,ÃÜ¶È(%),Ö´ĞĞÊ±¼ä(Ãë),½âµÄÊıÁ¿" << endl;
+    // å†™å…¥è¡¨å¤´
+    outFile << "é¡¶ç‚¹æ•°,è¾¹æ•°,å¯†åº¦(%),æ‰§è¡Œæ—¶é—´(ç§’),è§£çš„æ•°é‡" << endl;
     
-    // ±éÀúÄ¿Â¼ÖĞµÄËùÓĞÎÄ¼ş
+    // éå†ç›®å½•ä¸­çš„æ‰€æœ‰æ–‡ä»¶
     vector<string> files;
     try {
         for (const auto& entry : fs::directory_iterator(inputDir)) {
@@ -453,44 +453,44 @@ void analyzeAllGraphs() {
             }
         }
     } catch (const fs::filesystem_error& e) {
-        cerr << "ÎÄ¼şÏµÍ³´íÎó: " << e.what() << endl;
+        cerr << "æ–‡ä»¶ç³»ç»Ÿé”™è¯¯: " << e.what() << endl;
         return;
     }
     
-    // °´ÎÄ¼şÃûÅÅĞò£¨È·±£°´¶¥µãÊıµİÔöË³Ğò£©
+    // æŒ‰æ–‡ä»¶åæ’åºï¼ˆç¡®ä¿æŒ‰é¡¶ç‚¹æ•°é€’å¢é¡ºåºï¼‰
     sort(files.begin(), files.end());
     
-    // ·ÖÎöÃ¿¸öÎÄ¼ş
+    // åˆ†ææ¯ä¸ªæ–‡ä»¶
     for (const string& file : files) {
         analyzeGraphFile(file, outFile);
     }
     
     outFile.close();
-    cout << "·ÖÎöÍê³É£¬½á¹ûÒÑ±£´æµ½: " << outputFile << endl;
+    cout << "åˆ†æå®Œæˆï¼Œç»“æœå·²ä¿å­˜åˆ°: " << outputFile << endl;
 }
 
-// ²âÊÔµ¥¸öÍ¼ÎÄ¼ş²¢ÕÒµ½ËùÓĞ½â
+// æµ‹è¯•å•ä¸ªå›¾æ–‡ä»¶å¹¶æ‰¾åˆ°æ‰€æœ‰è§£
 void testSingleGraph(const string& filename) {
-    cout << "²âÊÔÎÄ¼ş: " << filename << endl;
+    cout << "æµ‹è¯•æ–‡ä»¶: " << filename << endl;
     
-    // ¼ÓÔØÍ¼
+    // åŠ è½½å›¾
     GraphColoring coloring;
     if (!coloring.loadGraphFromFile(filename)) {
-        cerr << "ÎŞ·¨¼ÓÔØÍ¼ÎÄ¼ş: " << filename << endl;
+        cerr << "æ— æ³•åŠ è½½å›¾æ–‡ä»¶: " << filename << endl;
         return;
     }
     
-    // ÉèÖÃ½â¾ö·½°¸ÊıÁ¿ÏŞÖÆ£¨0±íÊ¾²»ÏŞÖÆ£©
+    // è®¾ç½®è§£å†³æ–¹æ¡ˆæ•°é‡é™åˆ¶ï¼ˆ0è¡¨ç¤ºä¸é™åˆ¶ï¼‰
     const int SOLUTION_LIMIT = 0;
     
-    // Ñ°ÕÒËùÓĞ½â
-    int solutionCount = coloring.colorGraphAllSolutions(5, SOLUTION_LIMIT);  // ËÄÉ«Ìî³ä
+    // å¯»æ‰¾æ‰€æœ‰è§£
+    int solutionCount = coloring.colorGraphAllSolutions(5, SOLUTION_LIMIT);  // å››è‰²å¡«å……
     
-    cout << "ÕÒµ½ " << solutionCount << " ¸öÓĞĞ§½â" << endl;
+    cout << "æ‰¾åˆ° " << solutionCount << " ä¸ªæœ‰æ•ˆè§£" << endl;
     
-    // ÓÉÓÚ²»ÔÙ´æ´¢½â£¬ÒÔÏÂ²¿·ÖĞèÒª×¢ÊÍµô»òĞŞ¸Ä
+    // ç”±äºä¸å†å­˜å‚¨è§£ï¼Œä»¥ä¸‹éƒ¨åˆ†éœ€è¦æ³¨é‡Šæ‰æˆ–ä¿®æ”¹
     /*
-    // ÑéÖ¤ËùÓĞ½â
+    // éªŒè¯æ‰€æœ‰è§£
     int validCount = 0;
     for (const auto& solution : solutions) {
         if (coloring.verifyColoring(solution)) {
@@ -498,11 +498,11 @@ void testSingleGraph(const string& filename) {
         }
     }
     
-    cout << "ÑéÖ¤½á¹û: " << validCount << "/" << solutions.size() << " ¸öÓĞĞ§½â" << endl;
+    cout << "éªŒè¯ç»“æœ: " << validCount << "/" << solutions.size() << " ä¸ªæœ‰æ•ˆè§£" << endl;
     
-    // ·ÖÎöµÚÒ»¸ö½â£¨Èç¹ûÓĞ£©
+    // åˆ†æç¬¬ä¸€ä¸ªè§£ï¼ˆå¦‚æœæœ‰ï¼‰
     if (!solutions.empty()) {
-        cout << "\nµÚÒ»¸ö½âµÄ·ÖÎö:" << endl;
+        cout << "\nç¬¬ä¸€ä¸ªè§£çš„åˆ†æ:" << endl;
         coloring.analyzeColoring(solutions[0]);
     }
     */
@@ -512,11 +512,11 @@ int main() {
     analyzeAllGraphs();
     /*
     string filename;
-    cout << "ÇëÊäÈëÒª·ÖÎöµÄÍ¼ÎÄ¼şÂ·¾¶(ÊäÈë'all'·ÖÎöËùÓĞÍ¼): ";
+    cout << "è¯·è¾“å…¥è¦åˆ†æçš„å›¾æ–‡ä»¶è·¯å¾„(è¾“å…¥'all'åˆ†ææ‰€æœ‰å›¾): ";
     getline(cin, filename);
     
     if (filename == "all") {
-        cout << "¿ªÊ¼·ÖÎöËùÓĞËæ»úÍ¼µÄËã·¨Ğ§ÂÊ..." << endl;
+        cout << "å¼€å§‹åˆ†ææ‰€æœ‰éšæœºå›¾çš„ç®—æ³•æ•ˆç‡..." << endl;
         analyzeAllGraphs();
     } else {
         testSingleGraph(filename);

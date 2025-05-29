@@ -175,10 +175,11 @@ public:
         // 先尝试已使用的颜色
         for (int color : colorOrder) {
             // 排除等效冗余优化：如果此颜色未被使用过，只尝试一种新颜色
+            /*
             if (usedColors.count(color) == 0 && !usedColors.empty() && color != colorOrder[0]) {
                 continue;
             }
-            
+            */
             if (available[vertex][color-1] && isSafe(vertex, color, colors)) {
                 // 前向检查优化
                 if (!forwardCheck(vertex, color, available)) {
@@ -609,13 +610,13 @@ void analyzeEfficiency() {
 
 int main() {
     // 测试小规模示例
-    //testSmallExample("small_example.col");
+    testSmallExample("small_example.col");
     
     // 测试大规模数据
     testLargeExamples();
     
     // 分析算法效率
-    //analyzeEfficiency();
+    analyzeEfficiency();
     
     return 0;
 }

@@ -15,6 +15,14 @@ learn/*
 互联网编程/实验二/out
 互联网编程/实验二/out/*
 互联网编程/实验二/*.iml
+互联网编程/实验三/.idea/*
+互联网编程/实验三/out
+互联网编程/实验三/out/*
+互联网编程/实验三/*.iml
+互联网编程/实验四/.idea/*
+互联网编程/实验四/out
+互联网编程/实验四/out/*
+互联网编程/实验四/*.iml
 resources/*
 .gitattributes
 Blank_project.prj

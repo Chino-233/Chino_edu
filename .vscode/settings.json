@@ -16,12 +16,15 @@
     ],
     "cmake.showOptionsMovedNotification": false,
     "github.copilot.enable": {
-        "*": true,
-        "plaintext": false,
-        "markdown": true,
-        "scminput": false,
-        "cpp": false,
-        "python": true
+      "*": true,
+      "plaintext": false,
+      "markdown": true,
+      "scminput": false,
+      "cpp": false,
+      "python": true,
+      "java": true,
+      "c": true,
+      "asm-intel-x86-generic": false
     },
     "cmake.pinnedCommands": [
         "workbench.action.tasks.configureTaskRunner",

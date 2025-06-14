@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>香风智乃介绍 - Chino HTTP服务器</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .character-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .character-image {
+            max-width: 300px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .info-section {
+            background-color: #55b7e884;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            width: 100%;
+        }
+        .info-section h3 {
+            color: #55a3e8;
+            border-bottom: 2px solid #D8BFD8;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+        .nav-bar {
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="nav-bar">
+            <a href="index.html">首页</a>
+            <a href="a.html" class="active">智乃介绍</a>
+            <span id="auth-links">
+                <a href="login.html" id="login-link">登录</a>
+                <a href="register.html" id="register-link">注册</a>
+                <a href="logout.html" id="logout-link" style="display:none;">退出登录</a>
+            </span>
+        </div>
+
+        <h1>香风智乃</h1>
+        <div class="character-info">
+            <!-- 此处可以放置智乃的图片，记得替换为您拥有的图片路径 -->
+            <img src="chino.jpg" alt="香风智乃" class="character-image">
+            
+            <div class="info-section">
+                <h3>基本介绍</h3>
+                <p>香风智乃（Kafuu Chino）是动画《请问您今天要来点兔子吗？》的主角之一，是一位可爱的蓝发少女，经营着"Rabbit House"咖啡厅。</p>
+                <p>她性格内向害羞，但非常负责任，总是认真工作。除了经营咖啡厅，她还是一名学生。</p>
+            </div>
+            
+            <div class="info-section">
+                <h3>人物特点</h3>
+                <ul>
+                    <li>年龄：初中生</li>
+                    <li>职业：咖啡厅店员，学生</li>
+                    <li>特点：喜欢安静，有责任感，不擅长表达情感</li>
+                    <li>宠物：一只名叫提比（Tippy）的安哥拉兔，据说是她祖父的转世</li>
+                    <li>标志性口头禅："cocoa-san...（心爱姐姐..）"</li>
+                </ul>
+            </div>
+            
+            <div class="info-section">
+                <h3>关系</h3>
+                <p>智乃是以前店长（她的祖父）的孙女。她与她的朋友们：心爱、理世、千夜和纱路一起学习和工作，建立了深厚的友谊。</p>
+                <p>她与心爱（Cocoa）形成了类似姐妹的关系，尽管她常常对心爱过于活泼的性格感到困扰。</p>
+            </div>
+        </div>
+
+        <div class="links">
+            <p><a href="index.html">返回首页</a></p>
+        </div>
+        
+        <div class="footer">
+            <p>互联网编程 - 实验四</p>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -6,6 +6,15 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <div class="nav-bar">
+        <a href="index.html">首页</a>
+        <a href="Chino.html">智乃介绍</a>
+        <span id="auth-links">
+            <a href="login.html" id="login-link">登录</a>
+            <a href="register.html" id="register-link">注册</a>
+            <a href="logout.html" id="logout-link" style="display:none;">退出登录</a>
+        </span>
+    </div>
     <div class="container">
         <h1>Chino HTTP服务器首页</h1>
         <p>这是HTTP服务器的默认首页，服务器会自动加载此页面。</p>
@@ -25,8 +34,10 @@
         <div class="links">
             <h2>测试链接</h2>
             <ul>
-                <li><a href="a.html">测试页面 A</a></li>
+                <li><a href="Chino.html">智乃介绍</a></li>
                 <li><a href="login.html">登录页面</a></li>
+                <li><a href="register.html">注册页面</a></li>
+                <li id="logout-link" style="display:none;"><a href="logout.html" class="logout-btn">退出登录</a></li>
             </ul>
         </div>
         
@@ -36,5 +47,15 @@
         </div>
     </div>
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const username = getCookie('username');
+            if (username) {
+                document.getElementById('login-link').style.display = 'none';
+                document.getElementById('register-link').style.display = 'none';
+                document.getElementById('logout-link').style.display = 'inline';
+            }
+        });
+    </script>
 </body>
 </html>

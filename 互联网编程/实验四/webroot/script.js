@@ -29,15 +29,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // 检查Cookie
+    // 获取Cookie函数
     function getCookie(name) {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.startsWith(name + '=')) {
-                return cookie.substring(name.length + 1);
-            }
-        }
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
         return null;
     }
     
@@ -68,4 +64,21 @@ document.addEventListener('DOMContentLoaded', function() {
             this.alt = '图片加载失败';
         });
     });
+    
+    // 处理导航栏的登录状态
+    const loginLink = document.getElementById('login-link');
+    const registerLink = document.getElementById('register-link');
+    const logoutLink = document.getElementById('logout-link');
+    
+    if (username && loginLink && registerLink && logoutLink) {
+        console.log("用户已登录:", username);
+        loginLink.style.display = 'none';
+        registerLink.style.display = 'none';
+        logoutLink.style.display = 'inline-block';
+    } else {
+        console.log("用户未登录");
+        if (loginLink) loginLink.style.display = 'inline-block';
+        if (registerLink) registerLink.style.display = 'inline-block';
+        if (logoutLink) logoutLink.style.display = 'none';
+    }
 });

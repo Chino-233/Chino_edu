@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>退出登录 - Chino HTTP服务器</title>
+    <link rel="stylesheet" href="style.css">
+    <script>
+        // 立即执行函数，清除Cookie
+        (function() {
+            // 清除username和session_id Cookie
+            document.cookie = "username=; Path=/; Max-Age=0";
+            document.cookie = "session_id=; Path=/; Max-Age=0";
+            
+            // 延迟重定向到首页
+            setTimeout(function() {
+                window.location.href = "index.html";
+            }, 2000);
+        })();
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>退出登录</h1>
+        <p>您已成功退出登录</p>
+        <p>2秒后将自动返回首页...</p>
+        
+        <div class="links">
+            <p><a href="index.html">立即返回首页</a></p>
+        </div>
+        
+        <div class="footer">
+            <p>互联网编程 - 实验四</p>
+        </div>
+    </div>
+</body>
+</html>

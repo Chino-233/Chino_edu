@@ -125,28 +125,38 @@ bool read_graph(const string &filename) {
     return true;
 }
 
+// 打印桥
+void print_bridges(const vector<bool> &res) {
+    int cnt = 0;
+    for (int i = 1; i <= M; ++i) if (res[i]) ++cnt;
+    cout << "桥的数量 = " << cnt << "\n";
+    cout << "桥列表 (编号: u-v)\n";
+    for (int i = 1; i <= M; ++i) {
+        if (res[i]) {
+            auto [u, v] = edges[i];
+            cout << "  " << i << ": " << u << "-" << v << "\n";
+        }
+    }
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    string graph_path = "graph2.txt";  // 可以替换为你实际的文件路径
+    string graph_path = "largeG.txt";
 
     if (!read_graph(graph_path)) {
         cerr << "读取图失败，请检查路径是否正确！" << endl;
         return 1;
     }
 
+    auto t0 = chrono::steady_clock::now();
     auto res = compute_bridges(N, M, edges);
+    auto t1 = chrono::steady_clock::now();
+    double t = chrono::duration<double>(t1 - t0).count();
 
-    int cnt = 0;
-    for (int i = 1; i <= M; ++i) if (res[i]) ++cnt;
-    cout << "桥的数量 = " << cnt << "\n";
-    cout << "桥的编号及其端点 (edge_id: u - v)：\n";
-    for (int i = 1; i <= M; ++i) {
-        if (res[i]) {
-            auto [u, v] = edges[i];
-            cout << "  " << i << ": " << u << " - " << v << "\n";
-        }
-    }
+    cout << "=== 线段树分治算法 ===\n";
+    cout << "耗时: " << t << " s\n";
+    print_bridges(res);
     return 0;
 }

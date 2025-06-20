@@ -61,7 +61,7 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    string graph_path = "graph2.txt";  // 可以替换为你实际的文件路径
+    string graph_path = "largeG.txt"; 
 
     if (!read_graph(graph_path)) {
         cerr << "读取图失败，请检查路径是否正确！" << endl;

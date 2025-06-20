@@ -21,7 +21,6 @@ void dfs(int u, int parentEdge) {
             low[u] = min(low[u], low[v]);
             if (low[v] > dfn[u]) {
                 isBridge[eid] = true;
-                cout << "  [桥] 边 " << eid << " 是桥 (" << u << "-" << v << ")" << endl;
             }
         } else {
             low[u] = min(low[u], dfn[v]);
@@ -52,31 +51,28 @@ bool read_graph(const string &filename) {
 }
 
 // 桥检测主函数
-void find_bridges_tarjan() {
+VB find_bridges_tarjan() {
     dfn.assign(N + 1, 0);
     low.assign(N + 1, 0);
     isBridge.assign(M + 1, false);
     timer = 0;
 
-    cout << "[Tarjan] 开始遍历图的所有连通分量..." << endl;
     for (int u = 1; u <= N; u++) {
         if (!dfn[u]) {
-            cout << "  [DFS] 从节点 " << u << " 开始" << endl;
             dfs(u, -1);
         }
     }
+    
+    return isBridge;
+}
 
-    int cnt = 0;
+// 打印桥
+void print_bridges(const VB &res) {
+    int cnt = count(res.begin()+1, res.end(), true);
+    cout << "桥数量 = " << cnt << "\n";
+    cout << "桥列表 (编号: u-v)\n";
     for (int i = 1; i <= M; i++) {
-        if (isBridge[i]) cnt++;
-    }
-
-    cout << "\n[结果] 找到 " << cnt << " 条桥：" << endl;
-    for (int i = 1; i <= M; i++) {
-        if (isBridge[i]) {
-            auto [u, v] = edges[i];
-            cout << "  边编号 " << i << ": " << u << "-" << v << endl;
-        }
+        if (res[i]) cout << "  " << i << ": " << edges[i].first << "-" << edges[i].second << "\n";
     }
 }
 
@@ -84,14 +80,21 @@ int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
 
-    
-    string graph_path = "graph2.txt";  // 可以替换为你实际的文件路径
+    string graph_path = "largeG.txt";
 
     if (!read_graph(graph_path)) {
         cerr << "读取图失败，请检查路径是否正确！" << endl;
         return 1;
     }
+    
+    auto t0 = chrono::steady_clock::now();
+    VB res = find_bridges_tarjan();
+    auto t1 = chrono::steady_clock::now();
+    double t = chrono::duration<double>(t1 - t0).count();
 
-    find_bridges_tarjan();
+    cout << "=== Tarjan算法 ===\n";
+    cout << "耗时: " << t << " s\n";
+    print_bridges(res);  // 计时后输出
+    
     return 0;
 }

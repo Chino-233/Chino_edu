@@ -1,0 +1,8 @@
+# Chino HTTP服务器用户数据文件
+# 格式：用户名|密码|邮箱|注册时间戳
+# 创建时间：Thu Jun 19 22:04:36 CST 2025
+
+test|test123|test@example.com|1750336955184
+Chino|1||1750341876573
+admin|admin123|admin@example.com|1750336955184
+user|user123|user@example.com|1750336955184

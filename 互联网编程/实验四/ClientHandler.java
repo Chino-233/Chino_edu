@@ -2,13 +2,11 @@ import java.io.*;
 import java.net.*;
 import java.nio.file.Files;
 import java.util.*;
-import java.util.logging.*;
 
 /**
  * 处理客户端HTTP请求
  */
 public class ClientHandler implements Runnable {
-    private static final Logger logger = Logger.getLogger(ClientHandler.class.getName());
     private static final String WEB_ROOT = "webroot";
     private static final String DEFAULT_FILE = "index.html";
     private static final Map<String, String> MIME_TYPES = new HashMap<>();
@@ -41,6 +39,8 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
+        String clientInfo = socket.getInetAddress().getHostAddress() + ":" + socket.getPort();
+
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 BufferedOutputStream outputStream = new BufferedOutputStream(socket.getOutputStream())) {
 
@@ -50,7 +50,7 @@ public class ClientHandler implements Runnable {
                 return;
             }
 
-            logger.info("收到请求: " + requestLine);
+            System.out.println("收到请求: " + requestLine + " 来自: " + clientInfo);
 
             // 解析请求行
             StringTokenizer tokenizer = new StringTokenizer(requestLine);
@@ -75,11 +75,21 @@ public class ClientHandler implements Runnable {
             // 读取请求体(如果是POST请求)
             StringBuilder requestBody = new StringBuilder();
             if ("POST".equals(method) && headers.containsKey("content-length")) {
-                int contentLength = Integer.parseInt(headers.get("content-length"));
-                char[] buffer = new char[contentLength];
-                int bytesRead = reader.read(buffer, 0, contentLength);
-                if (bytesRead > 0) {
-                    requestBody.append(buffer, 0, bytesRead);
+                try {
+                    int contentLength = Integer.parseInt(headers.get("content-length"));
+                    if (contentLength > 0) {
+                        char[] buffer = new char[contentLength];
+                        int totalRead = 0;
+                        while (totalRead < contentLength) {
+                            int bytesRead = reader.read(buffer, totalRead, contentLength - totalRead);
+                            if (bytesRead == -1)
+                                break;
+                            totalRead += bytesRead;
+                        }
+                        requestBody.append(buffer, 0, totalRead);
+                    }
+                } catch (NumberFormatException e) {
+                    System.err.println("无效的Content-Length: " + headers.get("content-length"));
                 }
             }
 
@@ -95,18 +105,19 @@ public class ClientHandler implements Runnable {
                     handlePostRequest(path, headers, cookies, requestBody.toString(), outputStream);
                     break;
                 default:
-                    // 不支持的方法
                     sendErrorResponse(outputStream, 501, "Not Implemented");
                     break;
             }
 
+            System.out.println("请求处理完成: " + method + " " + path);
+
         } catch (IOException e) {
-            logger.log(Level.WARNING, "处理客户端请求时出错", e);
+            System.err.println("处理客户端请求时出错: " + clientInfo + " - " + e.getMessage());
         } finally {
             try {
                 socket.close();
             } catch (IOException e) {
-                logger.log(Level.WARNING, "关闭客户端连接时出错", e);
+                System.err.println("关闭客户端连接时出错: " + e.getMessage());
             }
             server.connectionClosed();
         }
@@ -317,8 +328,6 @@ public class ClientHandler implements Runnable {
             out.flush();
             return;
         }
-
-        // 其他POST请求处理...
     }
 
     private String parseFormField(String formData, String fieldName) {
@@ -374,8 +383,7 @@ public class ClientHandler implements Runnable {
             // 确保请求的文件在Web根目录下
             return normalizedPath.startsWith(rootPath);
         } catch (IOException e) {
-            logger.log(Level.WARNING, "路径验证失败", e);
-            return false; // 如果出现IO异常，认为路径不安全
+            return false; 
         }
     }
 }

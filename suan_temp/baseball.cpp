@@ -136,25 +136,36 @@ bool is_eliminated(int x, int N,
 }
 
 int main() {
-    // 示例输入：四队数据，可按需修改或改为文件/标准输入读取
+    // 实例数据：四支球队
     int N = 4;
-    vector<int> w = {83, 80, 78, 77};
-    vector<int> l = {71, 79, 78, 82};
-    vector<int> r_i = {8, 3, 6, 3};
-    vector<vector<int>> r = {
+    vector<int> w    = {83, 80, 78, 77};  // 已获胜场次
+    vector<int> l    = {71, 79, 78, 82};  // 已失败场次
+    vector<int> r_i  = { 8,  3,  6,  3};  // 剩余比赛场次
+    vector<vector<int>> r = {              // 相互之间的剩余比赛场次
         {0,1,6,1},
         {1,0,0,2},
         {6,0,0,0},
         {1,2,0,0}
     };
 
+    vector<string> team_names = {"Atlanta", "Philly", "NewYork", "Montreal"};
+
+    cout << "球队        胜场  负场  剩余  结果        用时(ms)\n";
+    cout << "------------------------------------------------\n";
+
     for (int x = 0; x < N; x++) {
         auto start = chrono::high_resolution_clock::now();
         bool elim = is_eliminated(x, N, w, r_i, r);
         auto end = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = end - start;
-        cout << "Team " << x << (elim ? " is eliminated" : " can still win") 
-             << " (Time: " << fixed << setprecision(4) << elapsed.count() << " ms)\n";
+        
+        cout << left << setw(10) << team_names[x]
+             << right << setw(4) << w[x] << "  "
+             << right << setw(4) << l[x] << "  "
+             << right << setw(4) << r_i[x] << "  "
+             << left << setw(10) << (elim ? "淘汰" : "可能获胜")
+             << right << setw(12) << fixed << setprecision(4) << elapsed.count() << "\n";
     }
+    
     return 0;
 }

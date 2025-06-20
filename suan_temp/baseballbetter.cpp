@@ -175,9 +175,10 @@ int main() {
         {1,2,0,0}
     };
 
-    cout << "球队编号从0开始\n\n";
-    cout << "球队\t胜场\t负场\t剩余\t结果\t用时(ms)\n";
-    cout << "-----------------------------------------------\n";
+    vector<string> team_names = {"Atlanta", "Philly", "NewYork", "Montreal"};
+
+    cout << "球队        胜场  负场  剩余  结果        用时(ms)\n";
+    cout << "------------------------------------------------\n";
 
     for (int x = 0; x < N; x++) {
         auto start = chrono::high_resolution_clock::now();
@@ -185,9 +186,13 @@ int main() {
         auto end = chrono::high_resolution_clock::now();
         chrono::duration<double, milli> elapsed = end - start;
         
-        cout << x << "\t" << w[x] << "\t" << l[x] << "\t" << r_i[x] << "\t" 
-             << (elim ? "淘汰" : "可能获胜") << "\t" 
-             << fixed << setprecision(4) << elapsed.count() << "\n";
+        cout << left << setw(10) << team_names[x]
+             << right << setw(4) << w[x] << "  "
+             << right << setw(4) << l[x] << "  "
+             << right << setw(4) << r_i[x] << "  "
+             << left << setw(10) << (elim ? "淘汰" : "可能获胜")
+             << right << setw(12) << fixed << setprecision(4) << elapsed.count() << "\n";
     }
+    
     return 0;
 }

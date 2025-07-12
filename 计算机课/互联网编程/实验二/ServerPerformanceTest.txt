@@ -1,0 +1,154 @@
+package 互联网编程.实验二;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+//服务器性能测试
+public class ServerPerformanceTest {
+    private final String serverAddress;
+    private final int serverPort;
+    private Thread serverThread;
+    private MultithreadedTcpServer multithreadedServer;
+    private ThreadPoolTcpServer threadPoolServer;
+    
+    public ServerPerformanceTest(int port) {
+        this.serverAddress = "localhost";
+        this.serverPort = port;
+    }
+    
+    public void runTests() {
+        System.out.println("===== 服务器性能测试开始 =====");
+        
+        // 测试参数
+        int[] clientCounts = {100};    // 并发客户端数
+        int[] messageCounts = {10}; // 每客户端消息数
+        
+        System.out.println("\n===== 测试传统多线程服务器 =====");
+        startMultithreadedServer();
+        sleep(1000);
+        
+        // 进行测试
+        for (int clientCount : clientCounts) {
+            for (int messageCount : messageCounts) {
+                runTest("多线程服务器", clientCount, messageCount);
+            }
+        }
+        
+        // 关闭服务器
+        stopMultithreadedServer();
+        sleep(1000);
+        
+        // 测试线程池服务器
+        System.out.println("\n===== 测试线程池服务器 =====");
+        startThreadPoolServer();
+        sleep(1000);
+        
+        // 进行测试
+        for (int clientCount : clientCounts) {
+            for (int messageCount : messageCounts) {
+                runTest("线程池服务器", clientCount, messageCount);
+            }
+        }
+        
+        // 关闭服务器
+        stopThreadPoolServer();
+        System.out.println("\n===== 服务器性能测试完成 =====");
+    }
+    
+    private void startMultithreadedServer() {
+        System.out.println("正在启动传统多线程服务器...");
+        multithreadedServer = new MultithreadedTcpServer(serverPort);
+        serverThread = new Thread(() -> {
+            multithreadedServer.start();
+        });
+        serverThread.setDaemon(true);  // 设为守护线程
+        serverThread.start();
+    }
+    
+    private void stopMultithreadedServer() {
+        System.out.println("正在关闭传统多线程服务器...");
+        if (multithreadedServer != null) {
+            multithreadedServer.stop();
+        }
+        if (serverThread != null) {
+            serverThread.interrupt();
+            try {
+                serverThread.join(1000);  // 等待服务器线程结束，
+            } catch (InterruptedException e) {
+                System.err.println("关闭服务器线程被中断");
+            }
+        }
+    }
+    
+    private void startThreadPoolServer() {
+        System.out.println("正在启动线程池服务器...");
+        threadPoolServer = new ThreadPoolTcpServer(serverPort);
+        serverThread = new Thread(() -> {
+            threadPoolServer.start();
+        });
+        serverThread.setDaemon(true);  // 设为守护线程
+        serverThread.start();
+    }
+    
+    private void stopThreadPoolServer() {
+        System.out.println("正在关闭线程池服务器...");
+        if (threadPoolServer != null) {
+            threadPoolServer.stop();
+        }
+        if (serverThread != null) {
+            serverThread.interrupt();
+            try {
+                serverThread.join(1000);  // 等待服务器线程结束
+            } catch (InterruptedException e) {
+                System.err.println("关闭服务器线程被中断");
+            }
+        }
+    }
+    
+    private void runTest(String serverType, int clientCount, int messageCount) {
+        System.out.println("\n开始测试: " + serverType + ", " + clientCount + "个客户端, 每个发送" + messageCount + "个消息");
+        
+        try {
+            // 创建并发客户端
+            ExecutorService executor = Executors.newFixedThreadPool(clientCount);
+            CountDownLatch latch = new CountDownLatch(clientCount);
+            
+            long startTime = System.currentTimeMillis();
+            
+            // 启动所有客户端
+            for (int i = 0; i < clientCount; i++) {
+                executor.execute(new TcpClient(serverAddress, serverPort, messageCount, latch));
+            }
+            
+            // 等待所有客户端完成
+            latch.await();
+            long endTime = System.currentTimeMillis();
+            
+            // 计算结果
+            long totalTime = endTime - startTime;
+            double totalRequests = clientCount * messageCount;
+            double requestsPerSecond = (totalRequests / totalTime) * 1000;
+            
+            System.out.println("测试结果:");
+            System.out.println("- 总耗时: " + totalTime + "ms");
+            System.out.println("- 总请求数: " + (int)totalRequests);
+            System.out.println("- 每秒请求数: " + String.format("%.2f", requestsPerSecond));
+            
+            // 关闭测试
+            executor.shutdown();
+            executor.awaitTermination(10, TimeUnit.SECONDS);
+            
+        } catch (InterruptedException e) {
+            System.err.println("测试被中断: " + e.getMessage());
+        }
+    }
+    
+    private void sleep(long milliseconds) {
+        try {
+            Thread.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            System.err.println("线程睡眠被中断");
+        }
+    }
+}

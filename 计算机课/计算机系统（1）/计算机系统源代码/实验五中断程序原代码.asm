@@ -1,0 +1,46 @@
+	.ORIG x2000
+	ST	R0,STONER0 ;
+	ST	R1,STONER1 ;
+	ST	R2,STONER2 ;
+	LD	R2,TEN ;中断程序保存寄存器内容
+IN1		
+    LDI R1,KBSR ; 判断是否可以读取
+	BRZP IN1 ;
+	LDI R0, KBDR ;将输入内容存入R0
+OUT1		
+    LDI R1,DSR ;判断能否输出
+	BRZP OUT1 ;
+	STI R0,DDR ;将输出内容输入
+	ADD	R2,R2,-1 ;
+	BRp	OUT1 ;计数，共输出十次
+IN2
+    LDI R1,KBSR ; 判断能否读取
+	BRZP IN2 ;
+	LDI R0,KBDR ;
+	ADD	R1,R0,-10; 判断是否是回车
+	BRZ	RETURN ;
+	BRnzp IN2 ;
+RETURN	
+    LDI R1, DSR ;判断是否可以输出
+	BRZP RETURN 
+	LD	R0,SPACE 	
+	STI R0, DDR ;把第一个空格放到输出
+OUT2
+	LDI R1, DSR ;判断是否可以输出
+	BRZP 	OUT2	
+	STI 	R0, DDR ;把第二个空格放到输出
+	ADD	R4,R4,-2
+	LD		R0,STONER0
+	LD		R1,STONER1
+	LD		R2,STONER2
+	RTI
+SPACE		.FILL	32
+STONER2		.BLKW	1
+STONER1		.BLKW	1
+STONER0		.BLKW	1
+KBSR 		.FILL 	xFE00 	
+KBDR	 	.FILL 	xFE02 	
+DSR 		.FILL 	xFE04 	
+DDR 		.FILL 	xFE06 	
+TEN			.FILL	10
+.END
